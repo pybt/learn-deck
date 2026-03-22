@@ -1,4 +1,5 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { cp, mkdir, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { aiAgentSkills } from "./data/ai/agent-skills";
 import { buildAgentSkills } from "./data/ai/build-agents";
@@ -57,5 +58,12 @@ for (const deck of decks) {
   await writeFile(path, html);
   console.log(`Generated: ${path}`);
 }
+
+const icloudDir = join(
+  homedir(),
+  "Library/Mobile Documents/com~apple~CloudDocs/Learn",
+);
+await cp(DECKS_DIR, icloudDir, { recursive: true });
+console.log(`Synced to iCloud: ${icloudDir}`);
 
 console.log(`Done — ${decks.length} deck(s) built.`);
