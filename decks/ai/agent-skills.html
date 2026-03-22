@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agent Skills — AI Learn</title>
+  <style>
+    :root {
+      --bg: #f8f6f2;
+      --bg-card: #ffffff;
+      --border: #ddd7ce;
+      --border-header: #d4cfc7;
+      --text: #2d2a26;
+      --text-title: #1a1815;
+      --text-muted: #7a746a;
+      --text-summary: #5c564c;
+      --text-body: #3d3832;
+      --accent: #3b6b4f;
+      --accent-shadow: rgba(59, 107, 79, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.04);
+      --toolbar-bg: #ffffff;
+      --toolbar-border: #ddd7ce;
+      --btn-bg: #edeae5;
+      --btn-hover: #ddd7ce;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --border: #334155;
+      --border-header: #334155;
+      --text: #e2e8f0;
+      --text-title: #f1f5f9;
+      --text-muted: #64748b;
+      --text-summary: #94a3b8;
+      --text-body: #cbd5e1;
+      --accent: #6ee7a0;
+      --accent-shadow: rgba(110, 231, 160, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.2);
+      --toolbar-bg: #1e293b;
+      --toolbar-border: #334155;
+      --btn-bg: #334155;
+      --btn-hover: #475569;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Charter", "Georgia", "Cambria", "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      font-size: 1rem;
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--toolbar-border);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .toolbar button {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toolbar button:hover {
+      background: var(--btn-hover);
+    }
+
+    .toolbar .font-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .toolbar .separator {
+      width: 1px;
+      height: 1.25rem;
+      background: var(--toolbar-border);
+      margin: 0 0.25rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 2px solid var(--border-header);
+      transition: border-color 0.3s;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.625rem;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 1px 3px var(--card-shadow);
+    }
+
+    .card:has(details[open]) {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+
+    details summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      list-style: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-number {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s;
+    }
+
+    [data-theme="dark"] .card-number {
+      color: #0f172a;
+    }
+
+    .card-header {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-title);
+      display: block;
+    }
+
+    .summary {
+      margin-top: 0.3rem;
+      font-size: 0.875rem;
+      color: var(--text-summary);
+      line-height: 1.5;
+    }
+
+    .chevron {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    .chevron::before,
+    .chevron::after {
+      content: "";
+      position: absolute;
+      background: var(--accent);
+      border-radius: 1px;
+      top: 50%;
+      left: 50%;
+      transition: background 0.3s;
+    }
+
+    .chevron::before {
+      width: 14px;
+      height: 2px;
+      transform: translate(-50%, -50%);
+    }
+
+    .chevron::after {
+      width: 2px;
+      height: 14px;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    details[open] .chevron::after {
+      transform: translate(-50%, -50%) scaleY(0);
+    }
+
+    .details {
+      padding: 0 1.25rem 1.25rem;
+      padding-left: calc(1.25rem + 2rem + 0.75rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .section h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .section p {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      line-height: 1.65;
+    }
+
+    .section pre {
+      background: var(--btn-bg);
+      border-radius: 0.375rem;
+      padding: 0.75rem 1rem;
+      overflow-x: auto;
+      margin: 0.3rem 0 0;
+      transition: background 0.3s;
+    }
+
+    .section pre code {
+      font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-body);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.25rem 0.75rem 2rem;
+      }
+
+      .title {
+        font-size: 1rem;
+      }
+
+      .details {
+        padding-left: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="toolbar">
+    <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
+    <span class="font-label" id="font-label">16</span>
+    <button type="button" id="font-up" aria-label="Increase font size">A+</button>
+    <span class="separator"></span>
+    <button type="button" id="theme-toggle" aria-label="Toggle theme">
+      <span id="theme-icon">&#9790;</span>
+    </button>
+  </nav>
+  <div class="container">
+    <header>
+      <h1>AI Agent Skills</h1>
+      <p>12 cards</p>
+    </header>
+    <ul class="card-list">
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">1</span>
+          <div class="card-header">
+            <span class="title">Tool Use &amp; Function Calling</span>
+            <p class="summary">AI agents extend their capabilities by calling external tools and APIs through structured function definitions and standardized protocols like MCP.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The model receives a schema describing available tools (name, parameters, types). When a task requires external action, it generates a structured function call instead of plain text. The runtime executes the call and feeds results back to the model. Parallel tool calls let agents batch independent actions in a single turn.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Tool schemas define what the agent can do. Parameter validation ensures safe calls. Tool choice constraints (auto, required, specific tool, none) guide model behavior. Deferred schema loading fetches tool definitions only when needed, keeping the initial context lean. Results become conversation context for follow-up reasoning.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A coding agent uses a 'read_file' tool to inspect source code, a 'search' tool to find references, and a 'write_file' tool to apply changes. With parallel tool calling, it can read multiple files in a single turn before deciding on edits.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">2</span>
+          <div class="card-header">
+            <span class="title">Model Context Protocol (MCP)</span>
+            <p class="summary">MCP is the open standard for connecting AI agents to external tools and data sources, enabling interoperability across models and clients.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>MCP uses JSON-RPC 2.0 to define a client-server protocol. An MCP server exposes tools (callable functions), resources (readable data), and prompt templates. Any MCP-compatible client (Claude Code, Cursor, ChatGPT) can discover and invoke these capabilities. Transport options include stdio for local processes and HTTP+SSE for remote servers.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Tools are model-callable functions with typed parameters. Resources are data the client can read (files, database rows, API responses). Prompts are reusable templates. Sampling lets servers request LLM completions. The protocol separates tool discovery from invocation, so agents dynamically learn what they can do.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Before MCP, every AI tool integration was custom-built per model and client. MCP provides a universal interface — build one MCP server for Postgres and it works with Claude Code, Cursor, ChatGPT, and any future client. Hundreds of MCP servers now exist for databases, APIs, browsers, and more.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">3</span>
+          <div class="card-header">
+            <span class="title">Planning &amp; Reasoning</span>
+            <p class="summary">Agents break complex tasks into steps using chain-of-thought reasoning, with dedicated reasoning models offering explicit thinking budgets.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Given a high-level goal, the agent decomposes it into subtasks, identifies dependencies, and determines an execution order. Reasoning models (Claude with extended thinking, OpenAI o3/o4, Gemini 2.5 with thinking mode) perform explicit chain-of-thought before acting, with configurable thinking budgets that trade latency for accuracy.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Task decomposition turns big problems into small ones. 'Think then act' patterns improve accuracy by reasoning before tool calls. Reasoning models expose thinking tokens — visible internal deliberation before the response. Re-planning happens when earlier steps produce unexpected results, adapting the approach mid-task.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Asked to 'add user authentication', an agent with extended thinking reasons through the codebase structure, then plans: 1) research existing auth patterns, 2) design schema changes, 3) implement middleware, 4) add routes, 5) write tests — checking results and re-planning at each step.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">4</span>
+          <div class="card-header">
+            <span class="title">Memory &amp; Context Management</span>
+            <p class="summary">Agents manage conversation context windows up to 1M+ tokens and use persistent file-based memory for cross-session continuity.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Short-term memory lives in the conversation context window, now reaching 200K-1M+ tokens. Long-term memory uses persistent files (like CLAUDE.md and memory directories), vector stores, or databases that the agent reads from and writes to. Prompt caching reduces cost by reusing identical context prefixes across calls.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Memory-as-files (CLAUDE.md, .cursorrules) provides simple, version-controlled persistence for project instructions and user preferences. Context compression summarizes older messages to stay within limits. RAG-based memory uses vector stores for semantic retrieval of past interactions. Prompt caching caches system prompts and tool definitions for repeated use.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>An agent remembers that a user prefers TypeScript and Bun by storing this in a memory file. In future sessions, it reads the memory on startup and applies these preferences automatically — without re-reading old conversations or being told again.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">5</span>
+          <div class="card-header">
+            <span class="title">Code Generation &amp; Editing</span>
+            <p class="summary">AI coding agents write, modify, and refactor code using project-aware context, diff-based editing, and test-driven validation loops.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The agent reads existing code to understand patterns, then generates new code or edits that match the project's style. Diff-based editing sends only changed portions rather than rewriting entire files. Agents follow a 'plan, code, test, iterate' loop — writing code, running tests, fixing failures, and repeating until all checks pass.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Project-level instruction files (CLAUDE.md, .cursorrules) guide code style and conventions. Git-aware agents understand branches, commits, and PRs. Sandbox execution environments protect against destructive actions. Multi-file coordination keeps changes consistent across the codebase.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Claude Code reads existing API endpoints for patterns, generates a new route handler matching the project's conventions, runs the test suite to verify, fixes any lint errors flagged by Biome, and presents the complete change set — all without manual intervention.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>AI coding agents (Claude Code, Cursor, GitHub Copilot, Windsurf) have moved from autocomplete to autonomous task completion. They can be assigned GitHub issues and deliver working PRs, turning coding agents from assistants into collaborators.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">6</span>
+          <div class="card-header">
+            <span class="title">Autonomous Debugging</span>
+            <p class="summary">Agents diagnose and fix bugs by forming hypotheses, inspecting code, running tests, and iterating on solutions in tight feedback loops.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Starting from an error or failing test, the agent reads stack traces, searches for related code, forms hypotheses about root causes, applies fixes, and re-runs tests to verify. It iterates until the issue is resolved or exhausts its approach and escalates to the user.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Hypothesis-driven debugging narrows down causes systematically. Stack trace parsing extracts file paths, line numbers, and error types for targeted investigation. Lint-fix loops run the linter, read violations, and apply corrections. Test-driven verification confirms fixes don't introduce regressions.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Given a failing test, the agent reads the error message, traces it to a null reference in a data transformation, finds that a recent schema change removed a required field, updates the transformation, re-runs the test suite, and confirms all tests pass before presenting the fix.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">7</span>
+          <div class="card-header">
+            <span class="title">Multi-Step Task Orchestration</span>
+            <p class="summary">Agent frameworks like Claude Agent SDK, OpenAI Agents SDK, and LangGraph coordinate sequences of actions with state management and parallel execution.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The agent operates in a loop: observe state, reason about the next action, execute a tool call, observe the result, repeat. Frameworks provide this loop with built-in tool execution, state management, guardrails, and tracing. Independent steps can run in parallel via sub-agents.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>The agent loop (observe-reason-act) is the core pattern. Handoffs transfer control between specialized agents. Fan-out/fan-in parallelizes independent subtasks. Human-in-the-loop gates require approval before destructive actions. Guardrails validate inputs and outputs at each step.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Using the Claude Agent SDK, a release automation agent runs tests in parallel sub-agents, bumps the version, generates a changelog, creates a build artifact, and publishes the package — with guardrails that block the publish step if any test agent reports failures.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">8</span>
+          <div class="card-header">
+            <span class="title">Multi-Agent Systems</span>
+            <p class="summary">Multiple specialized agents collaborate on complex tasks through supervisor delegation, peer-to-peer coordination, or assembly-line handoffs.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Instead of one agent doing everything, specialized agents handle different aspects of a task. A supervisor agent delegates subtasks, collects results, and synthesizes the final output. Alternatively, agents hand off to each other in sequence, or negotiate peer-to-peer.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>The supervisor pattern has one coordinator delegating to specialists. Assembly-line patterns chain agents in sequence. Shared memory or context passing maintains coherence across agents. Frameworks like OpenAI Agents SDK use explicit handoff protocols; Claude Code uses sub-agents with isolated contexts.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A code review system uses three agents: a 'security reviewer' checks for vulnerabilities, a 'style reviewer' checks conventions, and a 'logic reviewer' checks correctness. A supervisor agent collects their findings and produces a unified review with prioritized issues.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">9</span>
+          <div class="card-header">
+            <span class="title">Error Recovery &amp; Self-Correction</span>
+            <p class="summary">Agents detect when their actions fail, analyze the error, and adjust their approach automatically rather than repeating the same mistake.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>After each action, the agent evaluates the result against expectations. If something fails — a command errors, a test breaks, or output looks wrong — it classifies the failure type and selects a recovery strategy: modify parameters, try an alternative approach, or escalate to the user.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Result validation checks outputs after each step. Retry with variation avoids repeating the same mistake. Fallback strategies provide alternative paths. Structured error output from tools gives agents actionable information, not just 'failed.' Sandboxed execution catches errors before they cause real damage.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>An agent tries to install a package and gets a version conflict. Instead of retrying, it reads the error, checks compatible versions, adjusts the version constraint, and tries again. If the agent's code edit breaks a pre-commit hook, it reads the hook output, fixes the issue, and creates a new commit.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">10</span>
+          <div class="card-header">
+            <span class="title">Knowledge Retrieval (RAG)</span>
+            <p class="summary">Agents fetch relevant information from external sources using hybrid search and agentic retrieval patterns to ground responses in accurate data.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Retrieval-Augmented Generation combines the model's reasoning with external knowledge. Modern RAG uses hybrid search — combining vector similarity with keyword/BM25 search — followed by reranking for precision. Agentic RAG lets the model decide when to retrieve, reformulate queries, and synthesize across multiple retrieval rounds.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Embedding models convert text to vectors for semantic search. Semantic chunking splits documents by meaning, not just token count. Contextual retrieval prepends document-level context to each chunk for better relevance. GraphRAG combines knowledge graphs with vector search for relationship-aware retrieval.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A documentation agent receives a question about an API. Instead of a single retrieval pass, it performs agentic RAG: queries the docs, reads the results, identifies gaps, reformulates its query for missing details, retrieves again, and synthesizes an accurate answer with code examples from the actual docs.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">11</span>
+          <div class="card-header">
+            <span class="title">Computer &amp; Browser Use</span>
+            <p class="summary">Agents interact with graphical interfaces by taking screenshots, reasoning about visual layouts, and performing mouse and keyboard actions.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Computer use agents take screenshots of the screen, analyze the visual content with multimodal vision capabilities, and issue actions like mouse clicks, typing, and scrolling. Browser use agents navigate web pages — clicking links, filling forms, and extracting data — using tools like Playwright or dedicated browser automation frameworks.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Visual-spatial reasoning lets models understand UI layouts from screenshots. Action spaces define what the agent can do (click coordinates, type text, scroll). Browser agents work at a higher abstraction — interacting with DOM elements by selector rather than pixel coordinates. Safety boundaries prevent agents from accessing sensitive pages or making purchases without approval.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Computer and browser use unlock tasks that require interacting with applications that have no API — legacy systems, web forms, desktop software. This extends AI agents beyond code and text into the full range of knowledge work, from data entry to application testing.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">12</span>
+          <div class="card-header">
+            <span class="title">Safety, Guardrails &amp; Permissions</span>
+            <p class="summary">Production agents need permission systems, execution sandboxes, and validation guardrails to prevent unintended real-world consequences.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Permission systems control which tools an agent can use and what actions require human approval. Execution sandboxes restrict filesystem access, network connectivity, and system commands. Guardrails run validation on inputs and outputs at each step, catching unsafe content or policy violations before they reach the tool.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Allowlists define permitted operations; everything else is blocked by default. Approval gates pause for human confirmation before destructive actions (force-push, database writes, external messages). Input guardrails validate tool parameters; output guardrails check results. Sandbox modes disable network or limit filesystem access for untrusted code execution.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Unlike chatbots, agents take real-world actions — editing files, running commands, sending messages, making API calls. A misconfigured agent can delete data, push broken code, or send unintended communications. Safety-first design with layered permissions and guardrails is essential for production agent deployments.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+    </ul>
+  </div>
+  <script>
+    (() => {
+      const SIZES = [14, 15, 16, 17, 18, 20];
+      const KEY = location.pathname.replace(/[^a-z0-9]/gi, "_");
+
+      const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
+      let sizeIdx = SIZES.indexOf(savedSize);
+      if (sizeIdx < 0) sizeIdx = 2;
+
+      let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
+
+      const apply = () => {
+        document.documentElement.style.fontSize = `${SIZES[sizeIdx]}px`;
+        document.getElementById("font-label").textContent = SIZES[sizeIdx];
+        localStorage.setItem(`${KEY}_fs`, SIZES[sizeIdx]);
+      };
+
+      const applyTheme = () => {
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.getElementById("theme-icon").innerHTML = dark ? "&#9788;" : "&#9790;";
+        localStorage.setItem(`${KEY}_theme`, dark ? "dark" : "light");
+      };
+
+      document.getElementById("font-down").onclick = () => {
+        if (sizeIdx > 0) { sizeIdx--; apply(); }
+      };
+      document.getElementById("font-up").onclick = () => {
+        if (sizeIdx < SIZES.length - 1) { sizeIdx++; apply(); }
+      };
+      document.getElementById("theme-toggle").onclick = () => {
+        dark = !dark; applyTheme();
+      };
+
+      apply();
+      applyTheme();
+    })();
+  </script>
+</body>
+</html>

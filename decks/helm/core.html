@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Helm — AI Learn</title>
+  <style>
+    :root {
+      --bg: #f8f6f2;
+      --bg-card: #ffffff;
+      --border: #ddd7ce;
+      --border-header: #d4cfc7;
+      --text: #2d2a26;
+      --text-title: #1a1815;
+      --text-muted: #7a746a;
+      --text-summary: #5c564c;
+      --text-body: #3d3832;
+      --accent: #3b6b4f;
+      --accent-shadow: rgba(59, 107, 79, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.04);
+      --toolbar-bg: #ffffff;
+      --toolbar-border: #ddd7ce;
+      --btn-bg: #edeae5;
+      --btn-hover: #ddd7ce;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --border: #334155;
+      --border-header: #334155;
+      --text: #e2e8f0;
+      --text-title: #f1f5f9;
+      --text-muted: #64748b;
+      --text-summary: #94a3b8;
+      --text-body: #cbd5e1;
+      --accent: #6ee7a0;
+      --accent-shadow: rgba(110, 231, 160, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.2);
+      --toolbar-bg: #1e293b;
+      --toolbar-border: #334155;
+      --btn-bg: #334155;
+      --btn-hover: #475569;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Charter", "Georgia", "Cambria", "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      font-size: 1rem;
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--toolbar-border);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .toolbar button {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toolbar button:hover {
+      background: var(--btn-hover);
+    }
+
+    .toolbar .font-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .toolbar .separator {
+      width: 1px;
+      height: 1.25rem;
+      background: var(--toolbar-border);
+      margin: 0 0.25rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 2px solid var(--border-header);
+      transition: border-color 0.3s;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.625rem;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 1px 3px var(--card-shadow);
+    }
+
+    .card:has(details[open]) {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+
+    details summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      list-style: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-number {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s;
+    }
+
+    [data-theme="dark"] .card-number {
+      color: #0f172a;
+    }
+
+    .card-header {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-title);
+      display: block;
+    }
+
+    .summary {
+      margin-top: 0.3rem;
+      font-size: 0.875rem;
+      color: var(--text-summary);
+      line-height: 1.5;
+    }
+
+    .chevron {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    .chevron::before,
+    .chevron::after {
+      content: "";
+      position: absolute;
+      background: var(--accent);
+      border-radius: 1px;
+      top: 50%;
+      left: 50%;
+      transition: background 0.3s;
+    }
+
+    .chevron::before {
+      width: 14px;
+      height: 2px;
+      transform: translate(-50%, -50%);
+    }
+
+    .chevron::after {
+      width: 2px;
+      height: 14px;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    details[open] .chevron::after {
+      transform: translate(-50%, -50%) scaleY(0);
+    }
+
+    .details {
+      padding: 0 1.25rem 1.25rem;
+      padding-left: calc(1.25rem + 2rem + 0.75rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .section h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .section p {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      line-height: 1.65;
+    }
+
+    .section pre {
+      background: var(--btn-bg);
+      border-radius: 0.375rem;
+      padding: 0.75rem 1rem;
+      overflow-x: auto;
+      margin: 0.3rem 0 0;
+      transition: background 0.3s;
+    }
+
+    .section pre code {
+      font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-body);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.25rem 0.75rem 2rem;
+      }
+
+      .title {
+        font-size: 1rem;
+      }
+
+      .details {
+        padding-left: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="toolbar">
+    <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
+    <span class="font-label" id="font-label">16</span>
+    <button type="button" id="font-up" aria-label="Increase font size">A+</button>
+    <span class="separator"></span>
+    <button type="button" id="theme-toggle" aria-label="Toggle theme">
+      <span id="theme-icon">&#9790;</span>
+    </button>
+  </nav>
+  <div class="container">
+    <header>
+      <h1>Helm</h1>
+      <p>18 cards</p>
+    </header>
+    <ul class="card-list">
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">1</span>
+          <div class="card-header">
+            <span class="title">What Is Helm</span>
+            <p class="summary">Helm is the package manager for Kubernetes — a CNCF graduated project that packages pre-configured resources into reusable, versioned charts.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Helm bundles Kubernetes manifests into units called charts that can be installed, upgraded, and rolled back as a single release. Helm 3 operates as a client-side binary that talks directly to the Kubernetes API using your kubeconfig credentials — no server-side component needed. Current stable versions are in the 3.14-3.16+ range.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>A chart is a package of K8s resources. A release is a running instance of a chart in a cluster. A revision is a snapshot of a release at a point in time, incremented on each install, upgrade, or rollback. A repository is where charts are stored — either a traditional HTTP server or an OCI-compliant container registry.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Without Helm, deploying complex applications means managing dozens of individual YAML files, tracking versions manually, and handling upgrades by hand. Helm solves the copy-paste YAML problem with templating, versioning, dependency management, and release lifecycle control.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">2</span>
+          <div class="card-header">
+            <span class="title">Chart Structure</span>
+            <p class="summary">A Helm chart is a directory with a defined layout including Chart.yaml, templates, and default values.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>A chart directory contains Chart.yaml (metadata), values.yaml (defaults), a templates/ folder (Go templates that render K8s manifests), and optionally charts/ (dependencies), crds/ (Custom Resource Definitions), and templates/NOTES.txt (post-install instructions).</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Chart.yaml requires apiVersion: v2, name, and version (SemVer). The appVersion field is informational and tracks the deployed app version. Charts can be type application (default, installable) or library (non-installable, provides shared template helpers). The _helpers.tpl file holds reusable named templates.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A typical chart: Chart.yaml with name my-webapp and version 1.0.0, values.yaml with replicaCount: 3 and image settings, templates/deployment.yaml using:</p><pre><code>{{ .Values.replicaCount }}</code></pre><p>and a templates/service.yaml exposing the app.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>The standardized structure makes charts portable and shareable. Anyone can inspect values.yaml to see what's configurable, read NOTES.txt for usage instructions, and trust that the layout follows Helm conventions.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">3</span>
+          <div class="card-header">
+            <span class="title">Essential CLI Commands</span>
+            <p class="summary">Helm's CLI covers the full lifecycle: create, install, upgrade, rollback, and inspect releases.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Core commands:</p><pre><code>helm install    # deploy
+helm upgrade    # update
+helm rollback   # revert
+helm uninstall  # remove
+helm create     # scaffold a new chart
+helm lint       # static analysis
+helm template   # render manifests locally</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Override values with --set key=val or --values file.yaml. Use --dry-run --debug to simulate an install. The helm get subcommands (values, manifest, hooks, notes) inspect a live release.</p><pre><code>helm list
+helm history myapp</code></pre><p>helm list shows all releases, and helm history shows a release's revision timeline.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Typical workflow:</p><pre><code>helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm install my-redis bitnami/redis --set auth.password=secret --namespace cache</code></pre><p>Or using OCI:</p><pre><code>helm install my-redis oci://registry-1.docker.io/bitnamicharts/redis</code></pre>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>The CLI provides a consistent interface for managing application deployments across environments. Combined with --values files per environment (dev.yaml, prod.yaml), it enables repeatable, auditable deployments from local dev through CI/CD pipelines.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">4</span>
+          <div class="card-header">
+            <span class="title">Values and Templating</span>
+            <p class="summary">Helm uses Go templates with a layered values system to generate customized Kubernetes manifests.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Templates use Go template syntax with {{ }} delimiters. Values merge in precedence order: chart's values.yaml (lowest), parent chart values, -f values files, and --set flags (highest). Built-in objects like .Release.Name, .Values, .Chart, and .Capabilities are available in every template.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Pipelines chain functions with the | operator:</p><pre><code>{{ .Values.name | default &quot;app&quot; | quote }}</code></pre><p>Key functions include toYaml, indent/nindent, required (fail if empty), include (render named templates), and tpl (evaluate strings as templates). Use {{- and -}} to trim whitespace.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A deployment template:</p><pre><code>replicas: {{ .Values.replicaCount }}
+image: &quot;{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}&quot;
+labels:
+  {{ include &quot;mychart.labels&quot; . | nindent 4 }}</code></pre><p>Users override with:</p><pre><code>helm install --set replicaCount=5</code></pre>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Templating eliminates YAML duplication while keeping manifests readable. The values hierarchy lets chart authors provide sensible defaults that consumers override per environment. Adding a values.schema.json file validates user input at install time, catching misconfigurations early.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">5</span>
+          <div class="card-header">
+            <span class="title">Dependencies and Subcharts</span>
+            <p class="summary">Charts can declare dependencies on other charts, composing complex applications from reusable components.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Dependencies are listed in Chart.yaml under the dependencies key with name, version (SemVer range), and repository URL (or oci:// reference).</p><pre><code>helm dependency update</code></pre><p>This downloads them into the charts/ directory. A Chart.lock file pins exact versions for reproducible builds.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Use condition (e.g., postgresql.enabled) to toggle dependencies on/off. Use alias to install the same chart multiple times with different configs. Global values under the global: key are accessible in all charts. Subcharts are standalone — they cannot access parent values, but parents can override subchart values by nesting under the subchart's name.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A web app chart depends on postgresql and redis:</p><pre><code>dependencies:
+  - name: postgresql
+    version: &quot;12.x.x&quot;
+    repository: &quot;oci://registry-1.docker.io/bitnamicharts&quot;
+    condition: postgresql.enabled</code></pre><p>Parent values.yaml sets postgresql.auth.postgresPassword to configure the subchart.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Dependencies let you compose applications from battle-tested community charts rather than writing everything from scratch. A single helm install deploys your app and all its infrastructure dependencies together, with coordinated upgrades and rollbacks.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">6</span>
+          <div class="card-header">
+            <span class="title">Chart Repositories &amp; OCI</span>
+            <p class="summary">Charts are distributed through OCI-compliant container registries (preferred) or traditional HTTP chart repositories.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>OCI registries (Docker Hub, ECR, GCR, GHCR) are the preferred distribution method since Helm 3.8+. Push charts with helm push and reference them with oci:// URLs. Traditional chart repos use an HTTP server with an index.yaml file; manage them with:</p><pre><code>helm repo add &lt;name&gt; &lt;url&gt;
+helm repo update
+helm search repo &lt;keyword&gt;</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>OCI registries eliminate the separate index.yaml, integrate with existing container registry infrastructure and auth, and store charts alongside container images. Artifact Hub (artifacthub.io) is the central search engine for discovering public charts.</p><pre><code>helm search hub &lt;keyword&gt;
+helm search repo &lt;keyword&gt;</code></pre><p>helm search hub searches Artifact Hub; helm search repo searches locally added repos.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>OCI workflow:</p><pre><code>helm push mychart-1.0.0.tgz oci://registry.example.com/charts
+helm install myapp oci://registry.example.com/charts/mychart --version 1.0.0</code></pre><p>Traditional:</p><pre><code>helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install myapp bitnami/mychart</code></pre>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>OCI registry support means you can store charts alongside container images in the same registry, simplifying infrastructure, access control, and supply chain security for private charts. It's the recommended approach for new projects.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">7</span>
+          <div class="card-header">
+            <span class="title">Lifecycle Hooks</span>
+            <p class="summary">Hooks run Kubernetes resources at specific points in a release lifecycle, like database migrations before upgrades.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Hooks are regular K8s resources (typically Jobs) annotated with helm.sh/hook to specify when they run: pre-install, post-install, pre-upgrade, post-upgrade, pre-delete, post-delete, pre-rollback, post-rollback, or test. Hook weight (helm.sh/hook-weight) controls execution order — lower numbers run first.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Hook delete policies control cleanup: before-hook-creation (default), hook-succeeded, and hook-failed. Hook resources are not tracked as part of the release. For Jobs and Pods, Helm waits for completion before proceeding. A single resource can declare multiple hooks.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A database migration hook: a Job with annotations:</p><pre><code>annotations:
+  &quot;helm.sh/hook&quot;: pre-upgrade
+  &quot;helm.sh/hook-weight&quot;: &quot;-5&quot;</code></pre><p>This runs a migration container before the app pods are updated. A post-install hook might notify Slack that the deployment completed.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Hooks let you coordinate operations that must happen at specific lifecycle points — schema migrations, cache warming, backups before deletion — without building that logic into your application. They keep deployment orchestration declarative and version-controlled.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">8</span>
+          <div class="card-header">
+            <span class="title">Release Management</span>
+            <p class="summary">Helm tracks every install, upgrade, and rollback as numbered revisions stored as Secrets in the cluster.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Each helm install creates revision 1. Each upgrade increments the revision. Rollbacks also create a new revision. Release metadata — rendered manifests, values, and hooks — is stored as Kubernetes Secrets in the release namespace by default.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Helm 3 uses a three-way strategic merge on upgrades, comparing the old manifest, new manifest, and live cluster state. This means manual kubectl edits are detected and handled. The --history-max flag (default 10) limits stored revisions to prevent etcd bloat from accumulated Secrets.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>After a bad upgrade:</p><pre><code>helm history myapp
+helm rollback myapp 3
+helm get values myapp --revision 3</code></pre><p>helm history shows all revisions with status. helm rollback reverts to revision 3's state, creating a new revision. helm get values inspects what values were used in any past revision.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Built-in revision history and rollback give you a safety net for every deployment. You can confidently upgrade knowing that reverting is a single command away, with full auditability of what changed between revisions.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">9</span>
+          <div class="card-header">
+            <span class="title">Chart Testing</span>
+            <p class="summary">Helm provides multiple testing layers from static linting to BDD-style unit tests to in-cluster validation.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Testing tools:</p><pre><code>helm lint        # static analysis on chart structure
+helm template    # render manifests locally
+helm test        # run test-annotated Pods/Jobs against a live release</code></pre><p>The chart-testing (ct) CLI adds git-aware linting and install testing for CI pipelines.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Test resources live in templates/tests/ with the annotation helm.sh/hook: test. The helm-unittest plugin enables BDD-style unit tests that validate template output without a cluster — assert on rendered YAML paths and values. A complete strategy layers: lint, unit test, ct install, helm test, then integration tests.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A connection test Pod: runs wget against the service with restartPolicy: Never.</p><pre><code>helm install myapp ./mychart
+helm test myapp</code></pre><p>Helm creates the Pod, waits for completion, and reports pass/fail.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Testing catches misconfigurations before they reach production. Linting catches syntax errors instantly, unit tests verify template logic, and helm test validates the deployed application actually works. The ct tool integrates all of this into CI.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">10</span>
+          <div class="card-header">
+            <span class="title">Security and Best Practices</span>
+            <p class="summary">Secure Helm usage involves chart signing, RBAC-scoped credentials, pinned versions, and careful secrets management.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Charts can be signed during packaging with:</p><pre><code>helm package --sign</code></pre><p>This produces a .prov provenance file. Consumers verify with:</p><pre><code>helm install --verify</code></pre><p>For OCI-stored charts, Sigstore/cosign provides an alternative signing mechanism. Helm 3 uses your kubeconfig credentials directly — no cluster-admin Tiller risk.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Always pin chart versions in production — never use floating tags. Use RBAC-scoped kubeconfig so Helm only has needed permissions. Avoid putting secrets in values.yaml; use Kubernetes Secrets, external secret managers, or the helm-secrets plugin with SOPS encryption. The helm-diff plugin lets you review changes before applying upgrades.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>In CI/CD:</p><pre><code>helm upgrade --install myapp oci://registry.example.com/charts/myapp \
+  --version 2.1.0 \
+  --values prod.yaml \
+  --history-max 10 \
+  --namespace prod \
+  --atomic \
+  --timeout 5m</code></pre><p>The pinned OCI version, atomic rollback, and namespace scoping ensure a safe, reproducible deployment.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Supply chain attacks targeting Helm charts can compromise entire clusters. Signing and verification ensure chart integrity. RBAC scoping limits blast radius. Pinned versions and helm-diff give you auditability and predictability in production.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">11</span>
+          <div class="card-header">
+            <span class="title">Named Templates and Helpers</span>
+            <p class="summary">The _helpers.tpl file defines reusable template partials that eliminate duplication across chart templates.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Named templates are defined with:</p><pre><code>{{ define &quot;mychart.fullname&quot; }}...{{ end }}</code></pre><p>and invoked with:</p><pre><code>{{ include &quot;mychart.fullname&quot; . }}</code></pre><p>They live in _helpers.tpl by convention (the underscore means Helm won't render it as a manifest). The include function is preferred over template because its output can be piped.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Always prefix named templates with the chart name (e.g., mychart.labels) to avoid collisions — template names are global across parent and all subcharts. The dot (.) passed as the second argument sets the template's scope.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Define standard labels once:</p><pre><code>{{ define &quot;mychart.labels&quot; }}
+app.kubernetes.io/name: {{ .Chart.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{ end }}</code></pre><p>Then every resource uses:</p><pre><code>{{ include &quot;mychart.labels&quot; . | nindent 4 }}</code></pre><p>in metadata.labels.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Helpers keep charts DRY and maintainable. When you need to change a naming convention or add a label, you update one definition instead of every template file. helm create scaffolds _helpers.tpl with common patterns.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">12</span>
+          <div class="card-header">
+            <span class="title">Debugging Templates</span>
+            <p class="summary">Helm provides several tools to inspect, debug, and troubleshoot template rendering issues.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Debugging commands:</p><pre><code>helm template ./mychart                      # render locally
+helm template ./mychart --debug               # full output with computed values
+helm install --dry-run --debug                # simulate against live cluster
+helm install --dry-run=server                 # server-side validation (3.13+)</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Common issues: YAML indentation errors (fix with nindent), type coercion (quote strings to prevent YAML treating &quot;true&quot; as boolean), and nil pointer errors (use the default function or with blocks). Use --show-only to render a single template file for focused debugging.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Debug a specific template:</p><pre><code>helm template myapp ./mychart --show-only templates/deployment.yaml --set replicaCount=3</code></pre><p>Compare rendered vs expected on a live release:</p><pre><code>helm get manifest myapp</code></pre><p>Use helm diff upgrade to preview what would change.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Template bugs can produce valid YAML that deploys broken resources. Local rendering catches issues before they reach the cluster. --dry-run adds API validation for invalid fields. helm-diff shows exactly what an upgrade would change.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">13</span>
+          <div class="card-header">
+            <span class="title">Helm Plugins</span>
+            <p class="summary">Plugins extend Helm's CLI with commands for diffing, managing secrets, unit testing, and more.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Plugins are installed with:</p><pre><code>helm plugin install &lt;url&gt;</code></pre><p>and add new subcommands. They're standalone executables that receive Helm environment variables.</p><pre><code>helm plugin list
+helm plugin update &lt;name&gt;
+helm plugin uninstall &lt;name&gt;</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Essential plugins: helm-diff (preview upgrade changes), helm-secrets (encrypt/decrypt values using SOPS or age), helm-unittest (BDD-style template tests), helm-dashboard (web UI for releases). Plugins can also add downloaders for custom protocols.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Install and use helm-diff:</p><pre><code>helm plugin install https://github.com/databus23/helm-diff
+helm diff upgrade myapp ./mychart --values prod.yaml</code></pre><p>This shows a colored diff of what would change, letting you review before committing.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Plugins fill gaps in Helm's core functionality without bloating the main binary. helm-diff prevents production incidents by making changes visible. helm-secrets solves storing encrypted values alongside charts in version control.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">14</span>
+          <div class="card-header">
+            <span class="title">Helm in CI/CD</span>
+            <p class="summary">Helm integrates into CI/CD pipelines for automated, repeatable deployments with atomic rollbacks.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>CI/CD pipelines use helm upgrade --install for idempotent deployments. Combine with --atomic (auto-rollback on failure), --timeout (fail if resources don't become ready), and --wait (block until ready). OCI references with pinned versions ensure reproducibility.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Use per-environment values files (values-dev.yaml, values-prod.yaml) with the same chart. Pin chart versions for reproducibility. The --atomic flag ensures failed upgrades don't leave broken releases — Helm automatically rolls back. Use helm diff in CI to preview changes before applying.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A GitHub Actions step:</p><pre><code>helm upgrade --install myapp oci://ghcr.io/myorg/charts/myapp \
+  --version 2.1.0 \
+  --namespace prod \
+  --values values-prod.yaml \
+  --set image.tag=$GITHUB_SHA \
+  --atomic \
+  --timeout 5m \
+  --wait</code></pre><p>Deploys the exact commit SHA, waits for readiness, and auto-rolls back on failure.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Helm's idempotent upgrade --install, atomic rollbacks, and values hierarchy make it a natural fit for GitOps and CI/CD. Teams get repeatable deployments, environment parity, and automatic recovery from failed deployments.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">15</span>
+          <div class="card-header">
+            <span class="title">Umbrella and Library Charts</span>
+            <p class="summary">Umbrella charts deploy multi-service applications, while library charts share template logic without producing manifests.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>An umbrella chart has little or no templates — it composes by listing other charts as dependencies. A library chart (type: library in Chart.yaml) cannot be installed directly; it provides named templates that other charts import via {{ include }}.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Umbrella charts centralize multi-service deployment — one helm install deploys all services with coordinated lifecycle. Library charts standardize patterns like labels, annotations, and resource naming across an organization without copy-pasting helpers.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>An e-commerce umbrella chart depends on api, frontend, and worker subcharts. Its values.yaml sets global.imageRegistry and overrides per-service config. A company library chart defines standard-labels and standard-deployment templates that all team charts depend on.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Umbrella charts simplify multi-service deployments into a single release with unified versioning and rollback. Library charts enforce organizational standards — when a policy changes, update the library once and all consuming charts pick it up.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">16</span>
+          <div class="card-header">
+            <span class="title">Values Schema Validation</span>
+            <p class="summary">A JSON Schema file validates user-supplied values at install and upgrade time, catching misconfigurations early.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Place a values.schema.json file in the chart root. Helm validates the final merged .Values against this schema during install, upgrade, lint, and template commands. Validation errors block the operation with a clear message.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>The schema uses standard JSON Schema (draft-07) and can enforce types, required fields, enums, patterns, min/max values, and custom error messages. Subchart schemas are validated independently. The schema applies to the fully merged values, not just user overrides.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A schema requiring replicaCount as a positive integer and image.repository as a non-empty string:</p><pre><code>{
+  &quot;properties&quot;: {
+    &quot;replicaCount&quot;: { &quot;type&quot;: &quot;integer&quot;, &quot;minimum&quot;: 1 },
+    &quot;image&quot;: {
+      &quot;properties&quot;: {
+        &quot;repository&quot;: { &quot;type&quot;: &quot;string&quot;, &quot;minLength&quot;: 1 }
+      }
+    }
+  }
+}</code></pre><p>Passing --set replicaCount=0 gets an immediate validation error.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Without schema validation, typos and invalid values silently produce broken manifests. Schemas shift misconfiguration detection left to the earliest possible point and serve as living documentation of what each value expects.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">17</span>
+          <div class="card-header">
+            <span class="title">Multi-Environment Management</span>
+            <p class="summary">Helm's values hierarchy and overrides enable deploying the same chart across dev, staging, and production with minimal divergence.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Create per-environment values files that override the chart's defaults. Stack multiple -f flags to layer config:</p><pre><code>helm upgrade --install myapp ./chart \
+  -f values-shared.yaml \
+  -f values-prod.yaml</code></pre><p>Later files take precedence. Use --namespace to isolate environments or deploy to separate clusters via kubeconfig context.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Keep values.yaml as a development-friendly baseline. Environment files should only contain deltas — don't duplicate every value. Combine with Helm's schema validation to ensure environment-specific values are valid. Use helm diff to compare what's running vs what you're about to deploy.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>values.yaml sets dev defaults:</p><pre><code>replicaCount: 1
+resources:
+  limits:
+    memory: 256Mi</code></pre><p>values-prod.yaml overrides:</p><pre><code>replicaCount: 5
+resources:
+  limits:
+    memory: 1Gi
+ingress:
+  hosts:
+    - app.example.com</code></pre><p>The chart template is identical — only values differ.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Environment parity through shared charts means the exact template logic tested in staging runs in production. Differences are explicit and reviewable in values files rather than hidden in divergent manifests.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">18</span>
+          <div class="card-header">
+            <span class="title">Helm vs Kustomize</span>
+            <p class="summary">Helm uses templating and packaging while Kustomize uses overlay patching — many teams use both together.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Helm generates manifests from parameterized templates, packages them as distributable charts, and manages release lifecycle. Kustomize patches plain YAML through overlays — no templating language, just base manifests and strategic merge patches. They combine: helm template renders manifests that Kustomize then patches.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Helm excels at packaging reusable applications, dependency management, and release lifecycle tracking. Kustomize excels at customizing third-party manifests without forking and applying environment overlays on plain YAML. Helm's --post-renderer flag enables Kustomize as a post-rendering step.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Deploying Redis with Helm:</p><pre><code>helm install redis bitnami/redis</code></pre><p>gives you lifecycle management. With Kustomize, write a base deployment.yaml and a prod overlay. With both: use Helm's --post-renderer to pipe rendered manifests through Kustomize for additional patching.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Use Helm for distributing reusable applications and when you need release management. Use Kustomize for simple environment overlays on plain YAML. Many teams use both — Helm for third-party charts and Kustomize for in-house services or post-rendering customization.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+    </ul>
+  </div>
+  <script>
+    (() => {
+      const SIZES = [14, 15, 16, 17, 18, 20];
+      const KEY = location.pathname.replace(/[^a-z0-9]/gi, "_");
+
+      const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
+      let sizeIdx = SIZES.indexOf(savedSize);
+      if (sizeIdx < 0) sizeIdx = 2;
+
+      let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
+
+      const apply = () => {
+        document.documentElement.style.fontSize = `${SIZES[sizeIdx]}px`;
+        document.getElementById("font-label").textContent = SIZES[sizeIdx];
+        localStorage.setItem(`${KEY}_fs`, SIZES[sizeIdx]);
+      };
+
+      const applyTheme = () => {
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.getElementById("theme-icon").innerHTML = dark ? "&#9788;" : "&#9790;";
+        localStorage.setItem(`${KEY}_theme`, dark ? "dark" : "light");
+      };
+
+      document.getElementById("font-down").onclick = () => {
+        if (sizeIdx > 0) { sizeIdx--; apply(); }
+      };
+      document.getElementById("font-up").onclick = () => {
+        if (sizeIdx < SIZES.length - 1) { sizeIdx++; apply(); }
+      };
+      document.getElementById("theme-toggle").onclick = () => {
+        dark = !dark; applyTheme();
+      };
+
+      apply();
+      applyTheme();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docker Logging — AI Learn</title>
+  <style>
+    :root {
+      --bg: #f8f6f2;
+      --bg-card: #ffffff;
+      --border: #ddd7ce;
+      --border-header: #d4cfc7;
+      --text: #2d2a26;
+      --text-title: #1a1815;
+      --text-muted: #7a746a;
+      --text-summary: #5c564c;
+      --text-body: #3d3832;
+      --accent: #3b6b4f;
+      --accent-shadow: rgba(59, 107, 79, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.04);
+      --toolbar-bg: #ffffff;
+      --toolbar-border: #ddd7ce;
+      --btn-bg: #edeae5;
+      --btn-hover: #ddd7ce;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --border: #334155;
+      --border-header: #334155;
+      --text: #e2e8f0;
+      --text-title: #f1f5f9;
+      --text-muted: #64748b;
+      --text-summary: #94a3b8;
+      --text-body: #cbd5e1;
+      --accent: #6ee7a0;
+      --accent-shadow: rgba(110, 231, 160, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.2);
+      --toolbar-bg: #1e293b;
+      --toolbar-border: #334155;
+      --btn-bg: #334155;
+      --btn-hover: #475569;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Charter", "Georgia", "Cambria", "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      font-size: 1rem;
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--toolbar-border);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .toolbar button {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toolbar button:hover {
+      background: var(--btn-hover);
+    }
+
+    .toolbar .font-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .toolbar .separator {
+      width: 1px;
+      height: 1.25rem;
+      background: var(--toolbar-border);
+      margin: 0 0.25rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 2px solid var(--border-header);
+      transition: border-color 0.3s;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.625rem;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 1px 3px var(--card-shadow);
+    }
+
+    .card:has(details[open]) {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+
+    details summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      list-style: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-number {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s;
+    }
+
+    [data-theme="dark"] .card-number {
+      color: #0f172a;
+    }
+
+    .card-header {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-title);
+      display: block;
+    }
+
+    .summary {
+      margin-top: 0.3rem;
+      font-size: 0.875rem;
+      color: var(--text-summary);
+      line-height: 1.5;
+    }
+
+    .chevron {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    .chevron::before,
+    .chevron::after {
+      content: "";
+      position: absolute;
+      background: var(--accent);
+      border-radius: 1px;
+      top: 50%;
+      left: 50%;
+      transition: background 0.3s;
+    }
+
+    .chevron::before {
+      width: 14px;
+      height: 2px;
+      transform: translate(-50%, -50%);
+    }
+
+    .chevron::after {
+      width: 2px;
+      height: 14px;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    details[open] .chevron::after {
+      transform: translate(-50%, -50%) scaleY(0);
+    }
+
+    .details {
+      padding: 0 1.25rem 1.25rem;
+      padding-left: calc(1.25rem + 2rem + 0.75rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .section h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .section p {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      line-height: 1.65;
+    }
+
+    .section pre {
+      background: var(--btn-bg);
+      border-radius: 0.375rem;
+      padding: 0.75rem 1rem;
+      overflow-x: auto;
+      margin: 0.3rem 0 0;
+      transition: background 0.3s;
+    }
+
+    .section pre code {
+      font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-body);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.25rem 0.75rem 2rem;
+      }
+
+      .title {
+        font-size: 1rem;
+      }
+
+      .details {
+        padding-left: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="toolbar">
+    <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
+    <span class="font-label" id="font-label">16</span>
+    <button type="button" id="font-up" aria-label="Increase font size">A+</button>
+    <span class="separator"></span>
+    <button type="button" id="theme-toggle" aria-label="Toggle theme">
+      <span id="theme-icon">&#9790;</span>
+    </button>
+  </nav>
+  <div class="container">
+    <header>
+      <h1>Docker Logging</h1>
+      <p>11 cards</p>
+    </header>
+    <ul class="card-list">
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">1</span>
+          <div class="card-header">
+            <span class="title">Docker Logging Architecture</span>
+            <p class="summary">Docker captures stdout and stderr from container processes and routes them through pluggable logging drivers to configurable backends.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The Docker daemon intercepts everything a container's PID 1 writes to stdout and stderr. It passes these streams to the configured logging driver, which determines how and where logs are stored. The container itself doesn't need to know about the logging backend.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Applications should log to stdout/stderr rather than files — this follows the twelve-factor app methodology and lets Docker handle log routing. The logging driver is the abstraction layer between your container's output and the log storage system. Labels and environment variables can be attached as metadata.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Understanding this architecture means you design applications that are logging-driver agnostic. You can switch from local files to a centralized logging system without changing a single line of application code.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">2</span>
+          <div class="card-header">
+            <span class="title">The docker logs Command</span>
+            <p class="summary">docker logs retrieves log output from a container, with options for tailing, timestamps, and real-time following.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>docker logs reads stored log entries from the configured logging driver. It only works with drivers that support reading (json-file, local, and journald). Other drivers like syslog or fluentd forward logs externally and don't support docker logs.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Use --follow (-f) to stream logs in real time. Use --tail N to show only the last N lines. --since and --until filter by timestamp. --timestamps prepends each line with a timestamp. These flags combine for targeted debugging.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Debug a crashing container: docker logs --tail 50 --timestamps myapp shows the last 50 lines with timestamps. For live monitoring: docker logs -f --since 5m myapp streams logs from the last 5 minutes onward.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">3</span>
+          <div class="card-header">
+            <span class="title">JSON File Logging Driver</span>
+            <p class="summary">The default json-file driver stores logs as JSON lines on the host filesystem, with configurable rotation to prevent disk exhaustion.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Each log line is stored as a JSON object with 'log', 'stream' (stdout/stderr), and 'time' fields. Files are stored at /var/lib/docker/containers/&lt;id&gt;/&lt;id&gt;-json.log on the host. Without rotation, these files grow unbounded.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Configure rotation with max-size (e.g., 10m) and max-file (e.g., 3) options. These can be set per container with --log-opt or globally in daemon.json. The json-file driver supports docker logs, making it good for development and small deployments.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>docker run --log-driver json-file --log-opt max-size=10m --log-opt max-file=5 myapp keeps at most 5 log files of 10MB each, capping storage at 50MB per container. Set this globally in /etc/docker/daemon.json for all containers.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Unconfigured json-file logging is the number one cause of Docker hosts running out of disk space. Always set rotation limits — a single verbose container can fill a disk in hours.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">4</span>
+          <div class="card-header">
+            <span class="title">Local Logging Driver</span>
+            <p class="summary">The local driver uses a compressed protobuf format that is more efficient than json-file and recommended for production when not using centralized logging.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The local driver stores logs in an internal compressed format (protobuf) rather than plain JSON, reducing disk usage and I/O. It supports the same rotation options as json-file (max-size, max-file) and is compatible with docker logs for reading.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>The local driver is Docker's recommended alternative to json-file for production hosts. It offers better performance and smaller log files through compression. The tradeoff is that log files aren't human-readable on disk — you must use docker logs to read them. Default rotation is 100MB max-size with 5 files.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>If you don't need external log forwarding and want better performance than json-file, the local driver is the best choice. Set it as the daemon default for production hosts where containers don't use a centralized logging backend.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">5</span>
+          <div class="card-header">
+            <span class="title">Logging Driver Options</span>
+            <p class="summary">Docker supports multiple logging drivers including syslog, journald, fluentd, awslogs, and gcplogs for different infrastructure needs.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Set the driver per container with --log-driver or globally in daemon.json. Each driver has its own --log-opt options for configuration like remote endpoints, tags, and buffer sizes. The 'none' driver disables logging entirely for high-throughput containers.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>syslog sends to a syslog server. journald integrates with systemd. fluentd and gelf forward to log aggregators. awslogs and gcplogs send directly to cloud logging services. The logentries driver is deprecated. Choose based on your infrastructure — cloud-native drivers reduce overhead; fluentd/gelf provide flexibility for self-hosted stacks.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>For AWS: --log-driver=awslogs --log-opt awslogs-group=myapp --log-opt awslogs-region=us-east-1. For Fluentd: --log-driver=fluentd --log-opt fluentd-address=localhost:24224. Each driver integrates natively with its target platform.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Choosing the right driver determines your logging pipeline's reliability, latency, and cost. Cloud-native drivers reduce infrastructure overhead, while fluentd/gelf provide flexibility for self-hosted aggregation stacks.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">6</span>
+          <div class="card-header">
+            <span class="title">Log Tags &amp; Metadata</span>
+            <p class="summary">Docker log tags inject container metadata like name, ID, and image into log entries for identification in aggregated logging systems.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The --log-opt tag option accepts Go template syntax to embed container metadata. Templates like {{.Name}}, {{.ID}}, {{.ImageName}}, and {{.DaemonName}} are resolved at container start and included with every log message. Labels and environment variables can be included via --log-opt labels and --log-opt env.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Tags are essential when multiple containers send logs to the same destination. Without tags, you can't distinguish which container produced which log line. Adding labels (--log-opt labels=app,environment) enriches log metadata for filtering and aggregation.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>docker run --log-opt tag=&quot;{{.Name}}/{{.ID}}&quot; --log-opt labels=environment --label environment=prod --log-driver syslog myapp produces syslog entries with the container name, short ID, and environment label for easy filtering.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">7</span>
+          <div class="card-header">
+            <span class="title">Blocking vs Non-Blocking Delivery</span>
+            <p class="summary">Docker's log delivery mode controls whether a slow logging backend can stall your application or silently drop messages.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>In blocking mode (default), if the logging driver can't keep up, the container's stdout/stderr writes block — the application pauses until the driver catches up. Non-blocking mode uses a ring buffer; when full, oldest messages are dropped.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Set non-blocking mode with --log-opt mode=non-blocking and control the buffer with --log-opt max-buffer-size=4m. Blocking mode guarantees no log loss but risks application slowdown. Non-blocking prioritizes application performance over log completeness.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>A network hiccup to your log aggregator shouldn't take down your production API. Non-blocking mode protects application availability, but you must accept potential log gaps. Choose based on whether uptime or audit completeness is more critical.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">8</span>
+          <div class="card-header">
+            <span class="title">Logging in Docker Compose</span>
+            <p class="summary">Docker Compose configures per-service logging drivers and options directly in compose.yaml for consistent multi-container setups.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Each service in compose.yaml accepts a logging key with driver and options fields. This applies the logging configuration every time the service starts, ensuring consistency across environments and team members.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>The logging block sits at the same level as image, ports, and volumes in a service definition. Options mirror --log-opt flags. You can use YAML anchors to share logging config across multiple services and override per-service as needed.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Under a service: logging: { driver: json-file, options: { max-size: '10m', max-file: '3', tag: '{{.Name}}' } }. For a centralized setup, use driver: fluentd with options pointing to your Fluentd service defined in the same Compose file.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">9</span>
+          <div class="card-header">
+            <span class="title">Centralized Log Aggregation</span>
+            <p class="summary">Production Docker environments route container logs to centralized systems like Loki, ELK, or cloud services for search, alerting, and retention.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Containers forward logs via a logging driver or sidecar to an aggregator (Fluent Bit, Fluentd, Logstash, Promtail). The aggregator parses, enriches, and ships logs to a storage backend (Loki, Elasticsearch, CloudWatch) where they're indexed and searchable.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Grafana Loki is a lightweight alternative to ELK that indexes labels instead of full text, reducing storage costs significantly. The ELK stack (Elasticsearch, Logstash, Kibana) offers powerful full-text search. Cloud services (CloudWatch, Cloud Logging) reduce operational burden. Fluent Bit is a lighter alternative to Fluentd for resource-constrained environments.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A typical Loki stack: containers use the json-file driver, Promtail tails the log files and pushes to Loki, and Grafana provides the query UI. This avoids changing any container logging config — Promtail reads what Docker already writes.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Individual docker logs commands don't scale past a handful of containers. Centralized logging gives you cross-service correlation, retention policies, alerting on error patterns, and audit trails required for compliance.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">10</span>
+          <div class="card-header">
+            <span class="title">Structured Logging in Containers</span>
+            <p class="summary">Outputting logs as JSON from your application enables machine parsing, correlation IDs for request tracing, and richer queries in aggregation systems.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Instead of plain text, the application writes JSON objects to stdout with consistent fields like level, message, timestamp, and request_id. The log aggregator parses these fields automatically, enabling structured queries and dashboards.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Structured logs turn unstructured strings into queryable data. Correlation IDs (request_id, trace_id) follow a request across multiple containers. Consistent field names across services make cross-service queries possible. OpenTelemetry provides a standard for trace and log correlation.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A Node.js app using pino outputs: {&quot;level&quot;:30,&quot;time&quot;:1234567890,&quot;msg&quot;:&quot;request completed&quot;,&quot;req_id&quot;:&quot;abc-123&quot;,&quot;duration&quot;:45}. In Grafana or Kibana, you can filter by level, graph duration over time, and trace requests by req_id across all services.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Plain text logs require regex parsing that breaks when formats change. Structured logging makes logs a first-class data source for observability, enabling automated alerting on error rates, latency percentiles, and business metrics.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">11</span>
+          <div class="card-header">
+            <span class="title">Global Logging Configuration</span>
+            <p class="summary">The Docker daemon.json file sets default logging driver, rotation, and metadata options for all containers on a host.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Edit /etc/docker/daemon.json to set log-driver and log-opts at the daemon level. These defaults apply to every new container unless overridden at runtime. Changes require restarting the Docker daemon (systemctl restart docker).</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Daemon-level defaults ensure no container runs without log rotation. Per-container overrides still work for special cases. Common production defaults: json-file or local driver with max-size of 10-50MB and max-file of 3-5. Adding labels and tag options globally enriches all container logs with metadata.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>In daemon.json: { &quot;log-driver&quot;: &quot;local&quot;, &quot;log-opts&quot;: { &quot;max-size&quot;: &quot;20m&quot;, &quot;max-file&quot;: &quot;3&quot; } }. This uses the efficient local driver and caps every container at 60MB of logs. Override for verbose debug containers: docker run --log-driver json-file --log-opt max-size=100m debugapp.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Without daemon-level defaults, every container needs explicit log config or risks unbounded log growth. A single misconfigured container can fill a production host's disk, affecting all other containers on that machine.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+    </ul>
+  </div>
+  <script>
+    (() => {
+      const SIZES = [14, 15, 16, 17, 18, 20];
+      const KEY = location.pathname.replace(/[^a-z0-9]/gi, "_");
+
+      const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
+      let sizeIdx = SIZES.indexOf(savedSize);
+      if (sizeIdx < 0) sizeIdx = 2;
+
+      let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
+
+      const apply = () => {
+        document.documentElement.style.fontSize = `${SIZES[sizeIdx]}px`;
+        document.getElementById("font-label").textContent = SIZES[sizeIdx];
+        localStorage.setItem(`${KEY}_fs`, SIZES[sizeIdx]);
+      };
+
+      const applyTheme = () => {
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.getElementById("theme-icon").innerHTML = dark ? "&#9788;" : "&#9790;";
+        localStorage.setItem(`${KEY}_theme`, dark ? "dark" : "light");
+      };
+
+      document.getElementById("font-down").onclick = () => {
+        if (sizeIdx > 0) { sizeIdx--; apply(); }
+      };
+      document.getElementById("font-up").onclick = () => {
+        if (sizeIdx < SIZES.length - 1) { sizeIdx++; apply(); }
+      };
+      document.getElementById("theme-toggle").onclick = () => {
+        dark = !dark; applyTheme();
+      };
+
+      apply();
+      applyTheme();
+    })();
+  </script>
+</body>
+</html>

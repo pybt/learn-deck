@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creating Helm Charts — AI Learn</title>
+  <style>
+    :root {
+      --bg: #f8f6f2;
+      --bg-card: #ffffff;
+      --border: #ddd7ce;
+      --border-header: #d4cfc7;
+      --text: #2d2a26;
+      --text-title: #1a1815;
+      --text-muted: #7a746a;
+      --text-summary: #5c564c;
+      --text-body: #3d3832;
+      --accent: #3b6b4f;
+      --accent-shadow: rgba(59, 107, 79, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.04);
+      --toolbar-bg: #ffffff;
+      --toolbar-border: #ddd7ce;
+      --btn-bg: #edeae5;
+      --btn-hover: #ddd7ce;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --border: #334155;
+      --border-header: #334155;
+      --text: #e2e8f0;
+      --text-title: #f1f5f9;
+      --text-muted: #64748b;
+      --text-summary: #94a3b8;
+      --text-body: #cbd5e1;
+      --accent: #6ee7a0;
+      --accent-shadow: rgba(110, 231, 160, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.2);
+      --toolbar-bg: #1e293b;
+      --toolbar-border: #334155;
+      --btn-bg: #334155;
+      --btn-hover: #475569;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Charter", "Georgia", "Cambria", "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      font-size: 1rem;
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--toolbar-border);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .toolbar button {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toolbar button:hover {
+      background: var(--btn-hover);
+    }
+
+    .toolbar .font-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .toolbar .separator {
+      width: 1px;
+      height: 1.25rem;
+      background: var(--toolbar-border);
+      margin: 0 0.25rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 2px solid var(--border-header);
+      transition: border-color 0.3s;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.625rem;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 1px 3px var(--card-shadow);
+    }
+
+    .card:has(details[open]) {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+
+    details summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      list-style: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-number {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s;
+    }
+
+    [data-theme="dark"] .card-number {
+      color: #0f172a;
+    }
+
+    .card-header {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-title);
+      display: block;
+    }
+
+    .summary {
+      margin-top: 0.3rem;
+      font-size: 0.875rem;
+      color: var(--text-summary);
+      line-height: 1.5;
+    }
+
+    .chevron {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    .chevron::before,
+    .chevron::after {
+      content: "";
+      position: absolute;
+      background: var(--accent);
+      border-radius: 1px;
+      top: 50%;
+      left: 50%;
+      transition: background 0.3s;
+    }
+
+    .chevron::before {
+      width: 14px;
+      height: 2px;
+      transform: translate(-50%, -50%);
+    }
+
+    .chevron::after {
+      width: 2px;
+      height: 14px;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    details[open] .chevron::after {
+      transform: translate(-50%, -50%) scaleY(0);
+    }
+
+    .details {
+      padding: 0 1.25rem 1.25rem;
+      padding-left: calc(1.25rem + 2rem + 0.75rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .section h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .section p {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      line-height: 1.65;
+    }
+
+    .section pre {
+      background: var(--btn-bg);
+      border-radius: 0.375rem;
+      padding: 0.75rem 1rem;
+      overflow-x: auto;
+      margin: 0.3rem 0 0;
+      transition: background 0.3s;
+    }
+
+    .section pre code {
+      font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-body);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.25rem 0.75rem 2rem;
+      }
+
+      .title {
+        font-size: 1rem;
+      }
+
+      .details {
+        padding-left: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="toolbar">
+    <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
+    <span class="font-label" id="font-label">16</span>
+    <button type="button" id="font-up" aria-label="Increase font size">A+</button>
+    <span class="separator"></span>
+    <button type="button" id="theme-toggle" aria-label="Toggle theme">
+      <span id="theme-icon">&#9790;</span>
+    </button>
+  </nav>
+  <div class="container">
+    <header>
+      <h1>Creating Helm Charts</h1>
+      <p>16 cards</p>
+    </header>
+    <ul class="card-list">
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">1</span>
+          <div class="card-header">
+            <span class="title">helm create — Scaffolding a Chart</span>
+            <p class="summary">The helm create command generates a complete chart directory with best-practice defaults you can modify.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>What it scaffolds</h3>
+          <p>Run &quot;helm create mychart&quot; and Helm produces: Chart.yaml (metadata), values.yaml (defaults), charts/ (dependency tarballs), templates/ (Go template manifests), templates/NOTES.txt (post-install message), templates/_helpers.tpl (reusable named templates), templates/deployment.yaml, service.yaml, serviceaccount.yaml, hpa.yaml, ingress.yaml, templates/tests/test-connection.yaml, and .helmignore.</p>
+        </div>
+        <div class="section">
+          <h3>Directory walkthrough</h3>
+          <p>Chart.yaml is the identity card — name, version, dependencies. values.yaml holds every configurable knob with sensible defaults. templates/ contains Go templates that Helm renders into K8s manifests. Files starting with _ (like _helpers.tpl) are partials, never rendered directly. The charts/ directory stores downloaded dependency charts. The optional crds/ directory holds CRDs.</p>
+        </div>
+        <div class="section">
+          <h3>Key behaviors</h3>
+          <p>If the target directory doesn't exist, Helm creates it. You can use a starter chart with --starter to scaffold from a custom template instead of the built-in default. The default scaffold targets nginx — you'll replace the image, ports, and probe configuration for your own app.</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>The scaffolded templates are opinionated and verbose. Many teams strip them down to only what they need rather than trying to understand every conditional. Start by reading the generated _helpers.tpl — it defines the naming and labeling conventions used throughout all templates.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">2</span>
+          <div class="card-header">
+            <span class="title">Chart.yaml Deep Dive</span>
+            <p class="summary">Chart.yaml is the chart's identity file with required and optional fields controlling versioning, dependencies, and compatibility.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Required fields</h3>
+          <p>apiVersion: v2 (required for Helm 3). name: must match the directory name. version: must follow SemVer 2.0.0 (e.g., 1.2.3). These three fields are mandatory — Helm rejects a chart without them.</p>
+        </div>
+        <div class="section">
+          <h3>Important optional fields</h3>
+          <p>type: &quot;application&quot; (default, installable) or &quot;library&quot; (not installable, provides templates). appVersion: the deployed app version — purely informational. kubeVersion: SemVer constraint on K8s version, e.g., &quot;&gt;= 1.27.0&quot;. deprecated: boolean marking the chart as deprecated.</p>
+        </div>
+        <div class="section">
+          <h3>Metadata fields</h3>
+          <p>description: one-line summary for helm search. keywords: list for discovery. home/sources: project URLs. icon: URL to image. maintainers: list with name, email, url. annotations: freeform key-value pairs. As of Helm 3.3.2, unlisted fields are rejected.</p>
+        </div>
+        <div class="section">
+          <h3>Dependencies block</h3>
+          <p>Listed under dependencies: as an array. Each entry has: name, version (SemVer range like &quot;~12.1.0&quot;), repository (URL, oci://, or file:// for local). Optional: condition (boolean path), tags (group toggling), alias (rename), import-values. Run helm dependency update to download into charts/ and generate Chart.lock.</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>appVersion is a string, not SemVer — it can be any value like a commit SHA. Don't confuse it with version, which must be SemVer and is what Helm uses for chart comparisons. Bumping appVersion without bumping version means the chart package is identical to Helm.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">3</span>
+          <div class="card-header">
+            <span class="title">Writing Templates — Go Template Basics</span>
+            <p class="summary">Helm templates use Go's text/template language with {{ }} delimiters, pipelines, and whitespace control.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Actions</h3>
+          <p>Everything between {{ and }} is an action. Plain text outside passes through unchanged. Actions can output values: {{ .Values.name }}, call functions: {{ quote .Values.name }}, or control flow: {{ if .Values.enabled }}...{{ end }}. Comments: {{/* comment */}}.</p>
+        </div>
+        <div class="section">
+          <h3>Pipelines</h3>
+          <p>Pipelines chain functions with |, passing the previous result as the last argument. Example: {{ .Values.name | default &quot;app&quot; | quote }} applies default then quote. Pipelines are the idiomatic way to compose functions in Helm templates.</p>
+        </div>
+        <div class="section">
+          <h3>Whitespace control</h3>
+          <p>{{- trims all whitespace to the left. -}} trims to the right. There must be a space between the dash and the directive. This is critical because the template engine preserves all whitespace outside actions — without trimming, you get blank lines and broken YAML indentation.</p>
+        </div>
+        <div class="section">
+          <h3>Common patterns</h3>
+          <p>{{- if .Values.tolerations }}\ntolerations:\n{{ toYaml .Values.tolerations | indent 2 }}\n{{- end }} — conditionally include a block. {{ include &quot;mychart.labels&quot; . | nindent 4 }} — include a named template with proper indentation. Use nindent (not indent) when the include is inline after a key.</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>Aggressive {{- can eat too much whitespace and merge lines. A common bug: {{- end -}} everywhere collapses YAML structure. Be surgical — only trim the side with unwanted whitespace. Use helm template to preview output and verify indentation.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">4</span>
+          <div class="card-header">
+            <span class="title">Built-in Objects</span>
+            <p class="summary">Helm provides six top-level objects in every template: Release, Values, Chart, Capabilities, Files, and Template.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Release</h3>
+          <p>.Release.Name — the release name. .Release.Namespace — target namespace. .Release.IsInstall / .Release.IsUpgrade — boolean lifecycle flags. .Release.Revision — integer starting at 1. .Release.Service — always &quot;Helm&quot;. Use Release.Name for resource naming.</p>
+        </div>
+        <div class="section">
+          <h3>Values</h3>
+          <p>.Values contains the merged result of defaults, parent overrides, -f files, and --set flags. Access nested values with dot notation: .Values.image.repository. Always use default or with blocks to guard against nil values for optional nested keys.</p>
+        </div>
+        <div class="section">
+          <h3>Chart</h3>
+          <p>.Chart exposes Chart.yaml fields. Common: .Chart.Name, .Chart.Version, .Chart.AppVersion. Fields are title-cased when accessed — &quot;name&quot; becomes .Chart.Name. You cannot modify Chart values in templates.</p>
+        </div>
+        <div class="section">
+          <h3>Capabilities and Template</h3>
+          <p>.Capabilities.KubeVersion.Version — cluster K8s version. .Capabilities.APIVersions.Has &quot;batch/v1&quot; — check API availability. .Template.Name — full path like &quot;mychart/templates/deployment.yaml&quot;. .Template.BasePath — the templates directory.</p>
+        </div>
+        <div class="section">
+          <h3>Files</h3>
+          <p>.Files.Get &quot;config.ini&quot; — file contents as string. .Files.Glob &quot;conf/*.toml&quot; — matching files. .Files.AsConfig — format as ConfigMap data. .Files.AsSecrets — base64-encoded. .Files.Lines — line-by-line iteration. Cannot access files in templates/ or excluded by .helmignore.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">5</span>
+          <div class="card-header">
+            <span class="title">Essential Template Functions</span>
+            <p class="summary">Helm provides 60+ functions from Go templates and the Sprig library for string manipulation, data conversion, and validation.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>String and formatting</h3>
+          <p>quote / squote — wrap in quotes. upper / lower — case conversion. replace — substitution. trim / trimPrefix / trimSuffix. contains / hasPrefix / hasSuffix — boolean tests. printf — format strings: {{ printf &quot;%s-%s&quot; .Release.Name .Chart.Name }}.</p>
+        </div>
+        <div class="section">
+          <h3>YAML and indentation</h3>
+          <p>toYaml — converts any object to YAML string. Almost always piped to indent or nindent: {{ .Values.resources | toYaml | nindent 6 }}. nindent prepends a newline then indents — use when inline after a key. indent adds spaces without a leading newline. toJson / fromJson / fromYaml for format conversion.</p>
+        </div>
+        <div class="section">
+          <h3>Defaults and validation</h3>
+          <p>default — fallback: {{ .Values.port | default 8080 }}. required — halt if empty: {{ required &quot;image.repository is required&quot; .Values.image.repository }}. coalesce — first non-empty value. empty — true for zero/nil/empty. fail — abort unconditionally.</p>
+        </div>
+        <div class="section">
+          <h3>Advanced functions</h3>
+          <p>tpl — evaluate a string as a template: {{ tpl .Values.myTemplate . }}. lookup — query live cluster resources (empty with helm template). ternary — conditional: {{ ternary &quot;yes&quot; &quot;no&quot; .Values.enabled }}. include — render named template as pipeable string.</p>
+        </div>
+        <div class="section">
+          <h3>Data structure functions</h3>
+          <p>list — create a list. dict — create a dictionary. get / set — dictionary access. merge — combine dicts. keys / values — extract from dict. pick / omit — select or exclude keys. hasKey — check existence. range and index — iterate and access. Essential for building dynamic configuration blocks.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">6</span>
+          <div class="card-header">
+            <span class="title">Flow Control — if, with, range</span>
+            <p class="summary">Helm's three control structures generate conditional content, modify scope, and iterate over collections.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>if/else</h3>
+          <p>{{ if PIPELINE }}...{{ else if PIPELINE }}...{{ else }}...{{ end }}. A pipeline is false for: boolean false, 0, empty string, nil, or empty collection. Operators: eq, ne, lt, gt, le, ge, and, or, not. Example: {{ if and .Values.ingress.enabled (eq .Values.ingress.className &quot;nginx&quot;) }}.</p>
+        </div>
+        <div class="section">
+          <h3>with (scope modifier)</h3>
+          <p>{{ with .Values.favorite }}...{{ end }} sets dot (.) to .Values.favorite inside the block. Use {{ .drink }} instead of the full path. Critical: you cannot access outer objects with dot — use $ for root: {{ $.Release.Name }}. If the pipeline is empty/nil, the block is skipped (acts like an if).</p>
+        </div>
+        <div class="section">
+          <h3>range (loops)</h3>
+          <p>{{ range .Values.servers }}...{{ end }} iterates a list, setting dot to each element. For key-value: {{ range $key, $val := .Values.labels }}. Like with, range changes dot scope — use $ for root. Create inline lists with tuple: {{ range tuple &quot;small&quot; &quot;medium&quot; &quot;large&quot; }}.</p>
+        </div>
+        <div class="section">
+          <h3>Scope and the dollar sign</h3>
+          <p>The dot (.) is the current scope — root at top level, changes inside with and range. The $ always points to root and never changes. Pattern: {{ range .Values.items }}name: {{ $.Release.Name }}-{{ . }}{{ end }}. This is the most common source of confusion in Helm templates.</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>Empty lines from if/end blocks pollute YAML. Always use {{- if ... }} and {{- end }} to trim whitespace. Another trap: {{ if .Values.foo }} is true for ANY non-empty value including &quot;false&quot;. To check a boolean explicitly, use {{ if eq .Values.foo true }}.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">7</span>
+          <div class="card-header">
+            <span class="title">Named Templates — define, template, include</span>
+            <p class="summary">Named templates are reusable blocks defined once and invoked anywhere across the chart.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Defining templates</h3>
+          <p>{{ define &quot;mychart.labels&quot; }}...{{ end }} creates a named template. By convention, definitions live in templates/_helpers.tpl. Add documentation comments: {{/* Generate standard labels */}}. You can split helpers across multiple _ files.</p>
+        </div>
+        <div class="section">
+          <h3>template vs include</h3>
+          <p>{{ template &quot;mychart.labels&quot; . }} inserts output directly — cannot be piped. {{ include &quot;mychart.labels&quot; . }} returns a string — CAN be piped: {{ include &quot;mychart.labels&quot; . | nindent 4 }}. Always prefer include over template for indentation control.</p>
+        </div>
+        <div class="section">
+          <h3>Context passing</h3>
+          <p>The second argument sets the scope inside the named template. {{ include &quot;mychart.labels&quot; . }} passes full root context. {{ include &quot;mychart.labels&quot; .Values.app }} passes only that subtree. Forgetting to pass context makes dot nil, causing nil pointer errors.</p>
+        </div>
+        <div class="section">
+          <h3>Naming conventions</h3>
+          <p>Always prefix with the chart name: &quot;mychart.fullname&quot;, &quot;mychart.labels&quot;. Template names are globally unique across parent and subcharts — without the prefix, name collisions cause silent overwriting (last loaded wins).</p>
+        </div>
+        <div class="section">
+          <h3>_helpers.tpl standard patterns</h3>
+          <p>The scaffold defines: mychart.name (chart name, truncated to 63 chars), mychart.fullname (release-name-chart-name), mychart.chart (chart-name-version), mychart.labels (standard app.kubernetes.io/* labels), mychart.selectorLabels (immutable selectors), mychart.serviceAccountName (conditional name). These form the foundation every template references.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">8</span>
+          <div class="card-header">
+            <span class="title">values.yaml Design</span>
+            <p class="summary">Well-designed values.yaml makes your chart intuitive to configure with clear naming, documentation, and safe defaults.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Naming conventions</h3>
+          <p>Start with lowercase. Use camelCase: replicaCount, servicePort. Never use hyphens — invalid in Go templates. Never start with uppercase — conflicts with Helm built-ins. These conventions are enforced by community standards and Artifact Hub.</p>
+        </div>
+        <div class="section">
+          <h3>Flat vs nested</h3>
+          <p>Prefer flat when possible — serverName and serverPort is simpler than nesting under server:. Flat values eliminate nil checks. Use nesting only for many related variables where at least one is non-optional, like image.repository and image.tag.</p>
+        </div>
+        <div class="section">
+          <h3>Documenting values</h3>
+          <p>Document every property with a comment. This enables documentation generators like helm-docs to auto-generate README tables. Keep descriptions to one line. Always include the type implicitly through the default value.</p>
+        </div>
+        <div class="section">
+          <h3>Type safety</h3>
+          <p>Quote string values to prevent YAML coercion: env: &quot;true&quot; vs env: true (boolean). Use {{ .Values.name | quote }} in templates to ensure strings stay strings. Port numbers used in env vars should be stored as strings and converted with {{ int }}.</p>
+        </div>
+        <div class="section">
+          <h3>Override-friendly design</h3>
+          <p>Prefer maps over lists for values users override — maps work with --set (servers.foo.port=80) while lists require error-prone index notation. Provide empty map {} as default instead of null. Keep values.yaml as a dev-friendly baseline with minimal resources and single replicas.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">9</span>
+          <div class="card-header">
+            <span class="title">NOTES.txt — Post-Install Instructions</span>
+            <p class="summary">templates/NOTES.txt prints user-facing instructions after helm install or upgrade.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>NOTES.txt in templates/ is processed like any template — all built-in objects and functions are available. The rendered output is displayed after install and upgrade but is NOT sent to Kubernetes. It's purely informational CLI output.</p>
+        </div>
+        <div class="section">
+          <h3>What to include</h3>
+          <p>How to access the app (kubectl port-forward, ingress URLs), how to get generated credentials (kubectl get secret), how to check status. Include conditional instructions based on service type and ingress configuration.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A conditional block: {{- if .Values.ingress.enabled }}Visit http://{{ .Values.ingress.host }}{{- else }}Run kubectl port-forward svc/{{ include &quot;mychart.fullname&quot; . }} 8080:{{ .Values.service.port }} then visit http://127.0.0.1:8080{{- end }}</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>NOTES.txt is validated by helm lint — template errors block linting and installation. Since it runs through the template engine, a broken NOTES.txt can block an otherwise valid install. Test with helm template.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">10</span>
+          <div class="card-header">
+            <span class="title">Template Validation — lint, template, dry-run</span>
+            <p class="summary">Three complementary commands catch progressively deeper issues: lint for structure, template for rendering, dry-run for API validation.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>helm lint</h3>
+          <p>Static analysis on chart structure and templates. Reports [ERROR] for install failures and [WARNING] for convention violations. Lint with custom values: helm lint ./mychart -f prod-values.yaml. Integrate into CI.</p>
+        </div>
+        <div class="section">
+          <h3>helm template</h3>
+          <p>Renders all templates locally without a cluster. Use --show-only for a single file. --set and -f test different values. --debug shows output even on failure. Your primary debugging tool — run constantly while developing.</p>
+        </div>
+        <div class="section">
+          <h3>helm install --dry-run</h3>
+          <p>Requires a live cluster. Renders templates AND sends to the K8s API for validation without creating resources. Use --dry-run=server (Helm 3.13+) for server-side validation. Catches invalid fields and wrong API versions.</p>
+        </div>
+        <div class="section">
+          <h3>Recommended workflow</h3>
+          <p>1) helm lint for quick checks, 2) helm template to preview output, 3) helm template | kubectl apply --dry-run=client -f - for local K8s schema validation, 4) helm install --dry-run against a real cluster. In CI, run all four.</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>helm template cannot evaluate lookup functions (no cluster) — they return empty. --dry-run does NOT execute hooks or wait for readiness. A passing dry-run is necessary but not sufficient for catching all runtime issues.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">11</span>
+          <div class="card-header">
+            <span class="title">Packaging — helm package and .helmignore</span>
+            <p class="summary">helm package creates a versioned .tgz archive, and .helmignore controls excluded files.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>helm package</h3>
+          <p>Produces mychart-1.0.0.tgz (name-version from Chart.yaml). Options: --destination, --dependency-update, --sign (PGP provenance file), --app-version override. The .tgz can be pushed to OCI registries with helm push.</p>
+        </div>
+        <div class="section">
+          <h3>.helmignore file</h3>
+          <p>Works like .gitignore — one pattern per line, placed in the chart root. Controls which files are excluded from the .tgz. Supports glob patterns, directory patterns, and negation.</p>
+        </div>
+        <div class="section">
+          <h3>What to exclude</h3>
+          <p>Always exclude: .git/, .gitignore, .vscode/, .idea/, *.swp, .DS_Store, CI config, test fixtures, and files with secrets. The goal is a clean, minimal package.</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>.helmignore doesn't support ** (double-star) for recursive matching. Files starting with _ in templates/ are included in the package (they need to be — _helpers.tpl is essential). The .helmignore file itself is never included.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">12</span>
+          <div class="card-header">
+            <span class="title">Chart Hooks</span>
+            <p class="summary">Hooks run Kubernetes resources at strategic lifecycle points using annotations for timing, ordering, and cleanup.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Hook types</h3>
+          <p>Nine annotations for helm.sh/hook: pre-install, post-install, pre-delete, post-delete, pre-upgrade, post-upgrade, pre-rollback, post-rollback, test. A single resource can declare multiple: &quot;helm.sh/hook&quot;: pre-install,pre-upgrade.</p>
+        </div>
+        <div class="section">
+          <h3>Hook weights and ordering</h3>
+          <p>&quot;helm.sh/hook-weight&quot;: &quot;-5&quot; (must be a string). Execute in ascending order — negative first. Default weight is 0. Use for sequencing: -10 backup, -5 migration, 0 cache warming.</p>
+        </div>
+        <div class="section">
+          <h3>Delete policies</h3>
+          <p>&quot;helm.sh/hook-delete-policy&quot;: before-hook-creation (default), hook-succeeded, hook-failed. Combine: &quot;hook-succeeded,hook-failed&quot; for always-cleanup. Without a policy, hook resources accumulate.</p>
+        </div>
+        <div class="section">
+          <h3>Example: migration Job</h3>
+          <p>A Job with annotations helm.sh/hook: pre-upgrade, hook-weight: &quot;-5&quot;, hook-delete-policy: before-hook-creation,hook-succeeded. Runs migration before app pods update, cleans up on success.</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>Hook resources are NOT managed as part of the release — helm uninstall won't delete them without a delete policy. For Jobs and Pods, Helm waits until completion. If a hook Job fails, the entire install/upgrade fails.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">13</span>
+          <div class="card-header">
+            <span class="title">Subchart Communication</span>
+            <p class="summary">Parent charts pass values to subcharts through scoped overrides and global values that flow through the entire tree.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Value scoping</h3>
+          <p>Subcharts only see their own scoped values — they cannot access parent values directly. The template engine filters .Values to only the subchart's section from the parent.</p>
+        </div>
+        <div class="section">
+          <h3>Parent overrides</h3>
+          <p>In the parent's values.yaml, nest values under the subchart's name: postgresql: { auth: { postgresPassword: secret } }. The subchart accesses them normally as .Values.auth.postgresPassword.</p>
+        </div>
+        <div class="section">
+          <h3>Global values</h3>
+          <p>Values under the reserved global: key are accessible from ALL charts using .Values.global.*. Define in parent: global: { imageRegistry: myregistry.io }. Globals flow down the entire dependency tree.</p>
+        </div>
+        <div class="section">
+          <h3>Shared templates</h3>
+          <p>Named templates defined in any chart are globally available. A parent can include a subchart's template and vice versa. This is how library charts work. Always prefix template names with chart name to avoid collisions.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">14</span>
+          <div class="card-header">
+            <span class="title">values.schema.json — Input Validation</span>
+            <p class="summary">A JSON Schema file validates user-supplied values during install, upgrade, lint, and template operations.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Create values.schema.json alongside values.yaml. Helm validates final merged values against this schema during install, upgrade, template, and lint. Failures block the operation with a descriptive error. Uses JSON Schema draft-07.</p>
+        </div>
+        <div class="section">
+          <h3>Common validations</h3>
+          <p>Type enforcement: {&quot;replicaCount&quot;: {&quot;type&quot;: &quot;integer&quot;}}. Required fields. Enums: {&quot;pullPolicy&quot;: {&quot;enum&quot;: [&quot;Always&quot;, &quot;IfNotPresent&quot;, &quot;Never&quot;]}}. Range: {&quot;port&quot;: {&quot;minimum&quot;: 1, &quot;maximum&quot;: 65535}}. String patterns for naming conventions.</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>The schema validates MERGED values, not just overrides — your values.yaml defaults must also pass. Helm won't warn about keys missing from the schema. Subchart schemas are validated independently. Keep schema and values.yaml in sync manually — tools like helm-schema can help automate this.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">15</span>
+          <div class="card-header">
+            <span class="title">CRDs in Charts — the crds/ Directory</span>
+            <p class="summary">The crds/ directory holds Custom Resource Definitions installed before other resources, with significant limitations.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Place CRD YAML in crds/. During helm install, Helm uploads CRDs first, waits for API registration, then renders the rest. Multiple CRDs can share a file separated by ---.</p>
+        </div>
+        <div class="section">
+          <h3>Critical limitations</h3>
+          <p>CRDs in crds/ are NOT templated — plain YAML only. They are NEVER upgraded or deleted by Helm — only installed on first helm install. Subsequent upgrades skip crds/ entirely. Use --skip-crds to skip installation.</p>
+        </div>
+        <div class="section">
+          <h3>Best practices</h3>
+          <p>For simple, stable CRDs: use crds/. For CRDs needing templating or lifecycle management: put them in templates/ instead. For shared CRDs: create a separate dedicated CRD chart. Many projects (cert-manager, Prometheus) provide separate CRD charts for this reason.</p>
+        </div>
+        <div class="section">
+          <h3>Gotcha</h3>
+          <p>Since Helm won't upgrade CRDs, use kubectl apply -f crds/ manually. This is deliberate — CRDs are cluster-scoped and automatic upgrades could break other releases. The separate CRD chart approach avoids these limitations.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">16</span>
+          <div class="card-header">
+            <span class="title">Common Patterns — Labels, Naming, ConfigMaps</span>
+            <p class="summary">Standard patterns for resource labeling, naming, service accounts, and ConfigMaps make charts consistent and maintainable.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Standard labels</h3>
+          <p>Every resource should have: app.kubernetes.io/name, app.kubernetes.io/instance, app.kubernetes.io/version, app.kubernetes.io/managed-by, helm.sh/chart. Define in _helpers.tpl as a named template and include everywhere.</p>
+        </div>
+        <div class="section">
+          <h3>Selector labels</h3>
+          <p>Pod selectors must be IMMUTABLE after creation. Use only name + instance for selectors — never version or chart labels that change on upgrade. Define a separate selectorLabels template. Getting this wrong causes &quot;field is immutable&quot; errors.</p>
+        </div>
+        <div class="section">
+          <h3>Resource naming with fullname</h3>
+          <p>The fullname helper generates a unique name combining release and chart name, truncated to 63 characters. It supports nameOverride and fullnameOverride. Always use fullname — hardcoded names cause collisions with multiple releases.</p>
+        </div>
+        <div class="section">
+          <h3>ConfigMaps and auto-rollout</h3>
+          <p>Create ConfigMaps from files: {{ (.Files.Glob &quot;config/*&quot;).AsConfig | nindent 2 }}. To trigger pod restart on ConfigMap changes, add a pod annotation: checksum/config: {{ include (print $.Template.BasePath &quot;/configmap.yaml&quot;) . | sha256sum }}. This forces rolling updates when config changes.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+    </ul>
+  </div>
+  <script>
+    (() => {
+      const SIZES = [14, 15, 16, 17, 18, 20];
+      const KEY = location.pathname.replace(/[^a-z0-9]/gi, "_");
+
+      const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
+      let sizeIdx = SIZES.indexOf(savedSize);
+      if (sizeIdx < 0) sizeIdx = 2;
+
+      let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
+
+      const apply = () => {
+        document.documentElement.style.fontSize = `${SIZES[sizeIdx]}px`;
+        document.getElementById("font-label").textContent = SIZES[sizeIdx];
+        localStorage.setItem(`${KEY}_fs`, SIZES[sizeIdx]);
+      };
+
+      const applyTheme = () => {
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.getElementById("theme-icon").innerHTML = dark ? "&#9788;" : "&#9790;";
+        localStorage.setItem(`${KEY}_theme`, dark ? "dark" : "light");
+      };
+
+      document.getElementById("font-down").onclick = () => {
+        if (sizeIdx > 0) { sizeIdx--; apply(); }
+      };
+      document.getElementById("font-up").onclick = () => {
+        if (sizeIdx < SIZES.length - 1) { sizeIdx++; apply(); }
+      };
+      document.getElementById("theme-toggle").onclick = () => {
+        dark = !dark; applyTheme();
+      };
+
+      apply();
+      applyTheme();
+    })();
+  </script>
+</body>
+</html>

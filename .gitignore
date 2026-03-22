@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+*.iml
+.cursor/
+
+# OS
+.DS_Store
+
+# Build
+dist/

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Agent Skills — AI Learn</title>
+  <style>
+    :root {
+      --bg: #f8f6f2;
+      --bg-card: #ffffff;
+      --border: #ddd7ce;
+      --border-header: #d4cfc7;
+      --text: #2d2a26;
+      --text-title: #1a1815;
+      --text-muted: #7a746a;
+      --text-summary: #5c564c;
+      --text-body: #3d3832;
+      --accent: #3b6b4f;
+      --accent-shadow: rgba(59, 107, 79, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.04);
+      --toolbar-bg: #ffffff;
+      --toolbar-border: #ddd7ce;
+      --btn-bg: #edeae5;
+      --btn-hover: #ddd7ce;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --border: #334155;
+      --border-header: #334155;
+      --text: #e2e8f0;
+      --text-title: #f1f5f9;
+      --text-muted: #64748b;
+      --text-summary: #94a3b8;
+      --text-body: #cbd5e1;
+      --accent: #6ee7a0;
+      --accent-shadow: rgba(110, 231, 160, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.2);
+      --toolbar-bg: #1e293b;
+      --toolbar-border: #334155;
+      --btn-bg: #334155;
+      --btn-hover: #475569;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Charter", "Georgia", "Cambria", "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      font-size: 1rem;
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--toolbar-border);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .toolbar button {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toolbar button:hover {
+      background: var(--btn-hover);
+    }
+
+    .toolbar .font-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .toolbar .separator {
+      width: 1px;
+      height: 1.25rem;
+      background: var(--toolbar-border);
+      margin: 0 0.25rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 2px solid var(--border-header);
+      transition: border-color 0.3s;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.625rem;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 1px 3px var(--card-shadow);
+    }
+
+    .card:has(details[open]) {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+
+    details summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      list-style: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-number {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s;
+    }
+
+    [data-theme="dark"] .card-number {
+      color: #0f172a;
+    }
+
+    .card-header {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-title);
+      display: block;
+    }
+
+    .summary {
+      margin-top: 0.3rem;
+      font-size: 0.875rem;
+      color: var(--text-summary);
+      line-height: 1.5;
+    }
+
+    .chevron {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    .chevron::before,
+    .chevron::after {
+      content: "";
+      position: absolute;
+      background: var(--accent);
+      border-radius: 1px;
+      top: 50%;
+      left: 50%;
+      transition: background 0.3s;
+    }
+
+    .chevron::before {
+      width: 14px;
+      height: 2px;
+      transform: translate(-50%, -50%);
+    }
+
+    .chevron::after {
+      width: 2px;
+      height: 14px;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    details[open] .chevron::after {
+      transform: translate(-50%, -50%) scaleY(0);
+    }
+
+    .details {
+      padding: 0 1.25rem 1.25rem;
+      padding-left: calc(1.25rem + 2rem + 0.75rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .section h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .section p {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      line-height: 1.65;
+    }
+
+    .section pre {
+      background: var(--btn-bg);
+      border-radius: 0.375rem;
+      padding: 0.75rem 1rem;
+      overflow-x: auto;
+      margin: 0.3rem 0 0;
+      transition: background 0.3s;
+    }
+
+    .section pre code {
+      font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-body);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.25rem 0.75rem 2rem;
+      }
+
+      .title {
+        font-size: 1rem;
+      }
+
+      .details {
+        padding-left: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="toolbar">
+    <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
+    <span class="font-label" id="font-label">16</span>
+    <button type="button" id="font-up" aria-label="Increase font size">A+</button>
+    <span class="separator"></span>
+    <button type="button" id="theme-toggle" aria-label="Toggle theme">
+      <span id="theme-icon">&#9790;</span>
+    </button>
+  </nav>
+  <div class="container">
+    <header>
+      <h1>Build Agent Skills</h1>
+      <p>10 cards</p>
+    </header>
+    <ul class="card-list">
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">1</span>
+          <div class="card-header">
+            <span class="title">Agent Architecture Patterns</span>
+            <p class="summary">Build agents follow an observe-reason-act loop — reading build output, deciding the next step, and executing tool calls until the build succeeds or the agent escalates.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>A build agent operates in a ReAct-style loop: observe the current state (error logs, file contents, test results), reason about what action to take, execute a tool call, then observe the result. Frameworks like Claude Agent SDK and OpenAI Agents SDK provide this loop with built-in tool execution, state management, and tracing.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>The core loop consists of perception (reading files, logs, command output), planning (deciding the next step), and action (running commands, editing files). Agents need clear stopping conditions — either success criteria are met or a maximum iteration count is reached. Guardrails validate each action before execution.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Understanding the agent loop helps you design agents that are predictable and debuggable. A well-structured loop with explicit state transitions makes it easy to trace why an agent took a particular action and where it went wrong. Modern tracing tools like LangSmith provide visibility into every step.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">2</span>
+          <div class="card-header">
+            <span class="title">Designing Build Tools</span>
+            <p class="summary">Effective build agent tools have clear interfaces, return structured output, and can be exposed as MCP servers for interoperability across different agent clients.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Each tool is a function the agent can call with typed parameters. The tool executes an action (run a command, read a file, make an API call) and returns a structured result. Tools can be implemented as MCP servers, making them reusable across any MCP-compatible agent — Claude Code, Cursor, or custom agents.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Tools should return both the result and relevant metadata (exit codes, file paths modified, timing). Error responses should include actionable information, not just 'failed.' Idempotent tools are safer — running them twice produces the same result. Structured output (JSON) is preferred over human-readable text for machine consumption.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A 'run_tests' MCP tool accepts a file glob, executes the test runner, and returns structured output:</p><pre><code>{ passed: 42, failed: 2, failures: [{ test: 'auth.test.ts', error: 'timeout', line: 55 }] }</code></pre><p>Any MCP client can invoke this tool and parse the results for next-step reasoning.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">3</span>
+          <div class="card-header">
+            <span class="title">Context Window Management</span>
+            <p class="summary">Build agents must strategically manage their context window — even with 200K-1M token windows, large codebases and verbose build logs demand selective loading.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Rather than loading entire files or full build logs, effective agents read targeted sections — specific line ranges, filtered log output, or summarized results. With context windows now reaching 200K-1M tokens, agents can hold more, but large monorepos and verbose CI logs still demand discipline.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Use grep and targeted reads instead of reading whole files. Summarize long command outputs before adding them to context. Prompt caching reuses system prompts and tool definitions across calls, reducing cost. Sub-agents can handle isolated subtasks in their own context, reporting only results back to the parent.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Even with 1M token windows, a build agent working on a large monorepo can exhaust context by reading too many files or full build logs. Strategic context management and sub-agent delegation are the difference between an agent that scales to real projects and one that only works on toy examples.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">4</span>
+          <div class="card-header">
+            <span class="title">Error Recovery Strategies</span>
+            <p class="summary">Robust build agents detect, classify, and recover from failures by parsing structured error output, trying alternative approaches, and knowing when to escalate.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>When a build step fails, the agent parses the error output to classify the failure type (syntax error, missing dependency, test failure, timeout). Based on the classification, it selects a recovery strategy: fix the code, install a package, retry with different parameters, or escalate to the user with a clear explanation.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Distinguish between retryable errors (network timeouts, flaky tests) and deterministic failures (syntax errors, missing imports). Set retry limits to avoid infinite loops. Keep a history of attempted fixes to avoid repeating the same failed approach. Structured error output from build tools gives the agent actionable data for recovery.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A build fails with:</p><pre><code>Module not found: react-query</code></pre><p>The agent recognizes this as a missing dependency, checks package.json to confirm it's not listed, runs the install command, and retries the build. If the pre-commit hook fails after a fix, the agent reads the hook output, addresses the lint error, and creates a new commit rather than amending.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">5</span>
+          <div class="card-header">
+            <span class="title">Build Pipeline Orchestration</span>
+            <p class="summary">Build agents coordinate multi-step pipelines — installing dependencies, compiling, linting, testing, and packaging — with dependency-aware ordering and parallel execution.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The agent maintains a DAG (directed acyclic graph) of build steps. Dependencies must complete before dependents start. Steps without dependencies can run in parallel via sub-agents. The agent monitors each step's status and handles failures according to the pipeline's error policy — fail-fast or fail-tolerant.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Common pipeline stages: dependency installation, code generation, compilation, linting, unit tests, integration tests, packaging. Fail-fast stops on the first error. Fail-tolerant continues to collect all errors. Tools like Turborepo and Nx provide task-graph-aware execution for monorepos. GitHub Actions and other CI systems integrate AI agents for autonomous pipeline management.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Efficient orchestration dramatically reduces build times. Running lint and unit tests in parallel while integration tests wait for compilation saves minutes per build. AI agents that understand the dependency graph prevent wasted work and confusing error cascades.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">6</span>
+          <div class="card-header">
+            <span class="title">Build Caching &amp; Incrementality</span>
+            <p class="summary">Smart caching lets build agents skip unchanged work by tracking content hashes, dependency versions, and remote shared caches.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Before running a build step, the agent checks if inputs (source files, dependencies, configuration) have changed since the last successful run. If nothing changed, it reuses the cached output. Content hashing is more reliable than timestamps. Remote caches share build artifacts across machines, CI runs, and developers.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Layer caching (Docker) reuses unchanged image layers. Dependency caching stores node_modules or pip packages between builds. Turborepo and Nx provide remote caching for monorepo task graphs. Docker Build Cloud offers cloud-based build caching shared across teams. The Dockerfile RUN --mount=type=cache instruction caches package manager directories across builds.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>An agent building a TypeScript monorepo with Turborepo hashes each package's source files. If only packages/api changed, it fetches cached builds for packages/shared and packages/ui from the remote cache, recompiles only packages/api, and re-links. Build time drops from 3 minutes to 30 seconds.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">7</span>
+          <div class="card-header">
+            <span class="title">Environment &amp; Dependency Management</span>
+            <p class="summary">Build agents handle environment setup reliably — installing correct tool versions, resolving dependencies, and ensuring reproducible builds through containers and lockfiles.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The agent reads configuration files (package.json, pyproject.toml, .tool-versions) to determine required runtimes and dependencies. It verifies the environment matches requirements, installs missing tools, and resolves dependency conflicts before starting the build. Dev containers provide fully reproducible environments.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Lockfiles (bun.lock, package-lock.json, poetry.lock) ensure reproducible dependency resolution. Version managers (mise, nvm, pyenv) handle runtime versions. Dev containers (.devcontainer.json) provide full environment isolation with pre-configured toolchains. Docker init scaffolds best-practice Dockerfiles and compose files for any language.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>The most common build failure is 'works on my machine' — environment differences between developers and CI. An agent that validates and sets up its environment before building catches these issues immediately instead of producing cryptic errors mid-build.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">8</span>
+          <div class="card-header">
+            <span class="title">Build Output Parsing</span>
+            <p class="summary">Agents extract structured information from build tool output — error locations, warning counts, test results — to drive their decision-making loop.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Build tools output errors in predictable formats (file:line:column for compilers, stack traces for test runners). The agent uses pattern matching or structured output modes (--json flags) to extract actionable data like error locations, failure reasons, and suggested fixes.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Prefer structured output formats (JSON, TAP) over parsing human-readable text. When parsing is necessary, use the tool's documented error format. Extract file paths, line numbers, and error codes to enable targeted fixes rather than broad re-reads. Modern tools like Biome, ESLint, and TypeScript all support JSON output.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>TypeScript compiler output:</p><pre><code>src/api.ts(42,5): error TS2345: Argument of type string is not assignable to parameter of type number.</code></pre><p>The agent extracts file, line, col, and error code, reads that specific location, and applies a type-correct fix.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">9</span>
+          <div class="card-header">
+            <span class="title">Test Execution &amp; Feedback Loops</span>
+            <p class="summary">Build agents run tests to validate changes, using test results as feedback to iteratively fix code until all checks pass.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>After making a code change, the agent runs the relevant test suite and examines results. Failed tests provide specific feedback — expected vs actual values, stack traces, assertion messages. The agent uses this feedback to refine its changes and re-run tests in a tight change-test-fix loop.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Run only affected tests first for fast feedback, then the full suite for confidence. Track which tests were previously passing to detect regressions. Set a maximum number of fix-test iterations to prevent infinite loops on fundamentally broken approaches. SWE-Bench measures how well agents handle this loop on real-world GitHub issues.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Tests are the build agent's ground truth. Without test feedback, an agent can only guess whether its changes are correct. The tight loop of change-test-fix is what makes build agents reliable enough for production use — they prove their work is correct.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">10</span>
+          <div class="card-header">
+            <span class="title">Security &amp; Supply Chain Gates</span>
+            <p class="summary">Build agents integrate vulnerability scanning, SBOM generation, and supply chain verification as mandatory pipeline gates before producing final artifacts.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The agent runs security tools (Docker Scout, npm audit, Trivy, Snyk) to scan dependencies for known vulnerabilities. Static analysis tools (ESLint security rules, Semgrep, CodeQL) check source code. SBOM (Software Bill of Materials) generation documents every component. These checks block the build if critical issues are found.</p>
+        </div>
+        <div class="section">
+          <h3>Key concepts</h3>
+          <p>Shift-left security catches issues during build rather than in production. SLSA (Supply-chain Levels for Software Artifacts) defines provenance requirements. Sigstore/cosign provides keyless signing for artifacts. Docker Scout provides continuous vulnerability monitoring with remediation recommendations. Severity thresholds determine which findings block the build.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>The agent runs Docker Scout and finds a critical CVE in the base image. It checks Scout's recommendations, updates the base image tag in the Dockerfile, rebuilds, re-scans to confirm the fix, generates an SBOM, signs the artifact with cosign, and continues the pipeline.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+    </ul>
+  </div>
+  <script>
+    (() => {
+      const SIZES = [14, 15, 16, 17, 18, 20];
+      const KEY = location.pathname.replace(/[^a-z0-9]/gi, "_");
+
+      const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
+      let sizeIdx = SIZES.indexOf(savedSize);
+      if (sizeIdx < 0) sizeIdx = 2;
+
+      let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
+
+      const apply = () => {
+        document.documentElement.style.fontSize = `${SIZES[sizeIdx]}px`;
+        document.getElementById("font-label").textContent = SIZES[sizeIdx];
+        localStorage.setItem(`${KEY}_fs`, SIZES[sizeIdx]);
+      };
+
+      const applyTheme = () => {
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.getElementById("theme-icon").innerHTML = dark ? "&#9788;" : "&#9790;";
+        localStorage.setItem(`${KEY}_theme`, dark ? "dark" : "light");
+      };
+
+      document.getElementById("font-down").onclick = () => {
+        if (sizeIdx > 0) { sizeIdx--; apply(); }
+      };
+      document.getElementById("font-up").onclick = () => {
+        if (sizeIdx < SIZES.length - 1) { sizeIdx++; apply(); }
+      };
+      document.getElementById("theme-toggle").onclick = () => {
+        dark = !dark; applyTheme();
+      };
+
+      apply();
+      applyTheme();
+    })();
+  </script>
+</body>
+</html>
