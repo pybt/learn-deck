@@ -315,7 +315,7 @@
 <body>
   <nav class="toolbar">
     <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
-    <span class="font-label" id="font-label">16</span>
+    <span class="font-label" id="font-label">18</span>
     <button type="button" id="font-up" aria-label="Increase font size">A+</button>
     <span class="separator"></span>
     <button type="button" id="theme-toggle" aria-label="Toggle theme">
@@ -377,7 +377,7 @@
         </div>
         <div class="section">
           <h3>Example</h3>
-          <p>Debug a crashing container: docker logs --tail 50 --timestamps myapp shows the last 50 lines with timestamps. For live monitoring: docker logs -f --since 5m myapp streams logs from the last 5 minutes onward.</p>
+          <p>Debug a crashing container:</p><pre><code>docker logs --tail 50 --timestamps myapp</code></pre><p>shows the last 50 lines with timestamps. For live monitoring:</p><pre><code>docker logs -f --since 5m myapp</code></pre><p>streams logs from the last 5 minutes onward.</p>
         </div>
         </div>
       </details>
@@ -396,7 +396,7 @@
         <div class="details">
         <div class="section">
           <h3>How it works</h3>
-          <p>Each log line is stored as a JSON object with 'log', 'stream' (stdout/stderr), and 'time' fields. Files are stored at /var/lib/docker/containers/&lt;id&gt;/&lt;id&gt;-json.log on the host. Without rotation, these files grow unbounded.</p>
+          <p>Each log line is stored as a JSON object with 'log', 'stream' (stdout/stderr), and 'time' fields. Files are stored at the following path on the host:</p><pre><code>/var/lib/docker/containers/&lt;id&gt;/&lt;id&gt;-json.log</code></pre><p>Without rotation, these files grow unbounded.</p>
         </div>
         <div class="section">
           <h3>Key concepts</h3>
@@ -404,7 +404,7 @@
         </div>
         <div class="section">
           <h3>Example</h3>
-          <p>docker run --log-driver json-file --log-opt max-size=10m --log-opt max-file=5 myapp keeps at most 5 log files of 10MB each, capping storage at 50MB per container. Set this globally in /etc/docker/daemon.json for all containers.</p>
+          <p>Run a container with log rotation configured:</p><pre><code>docker run --log-driver json-file --log-opt max-size=10m --log-opt max-file=5 myapp</code></pre><p>This keeps at most 5 log files of 10MB each, capping storage at 50MB per container. Set this globally in /etc/docker/daemon.json for all containers.</p>
         </div>
         <div class="section">
           <h3>Why it matters</h3>
@@ -462,7 +462,7 @@
         </div>
         <div class="section">
           <h3>Example</h3>
-          <p>For AWS: --log-driver=awslogs --log-opt awslogs-group=myapp --log-opt awslogs-region=us-east-1. For Fluentd: --log-driver=fluentd --log-opt fluentd-address=localhost:24224. Each driver integrates natively with its target platform.</p>
+          <p>For AWS:</p><pre><code>--log-driver=awslogs --log-opt awslogs-group=myapp --log-opt awslogs-region=us-east-1</code></pre><p>For Fluentd:</p><pre><code>--log-driver=fluentd --log-opt fluentd-address=localhost:24224</code></pre><p>Each driver integrates natively with its target platform.</p>
         </div>
         <div class="section">
           <h3>Why it matters</h3>
@@ -489,11 +489,16 @@
         </div>
         <div class="section">
           <h3>Key concepts</h3>
-          <p>Tags are essential when multiple containers send logs to the same destination. Without tags, you can't distinguish which container produced which log line. Adding labels (--log-opt labels=app,environment) enriches log metadata for filtering and aggregation.</p>
+          <p>Tags are essential when multiple containers send logs to the same destination. Without tags, you can't distinguish which container produced which log line. Adding labels enriches log metadata for filtering and aggregation:</p><pre><code>--log-opt labels=app,environment</code></pre>
         </div>
         <div class="section">
           <h3>Example</h3>
-          <p>docker run --log-opt tag=&quot;{{.Name}}/{{.ID}}&quot; --log-opt labels=environment --label environment=prod --log-driver syslog myapp produces syslog entries with the container name, short ID, and environment label for easy filtering.</p>
+          <p>Run a container with tag and label metadata:</p><pre><code>docker run \
+  --log-opt tag=&quot;{{.Name}}/{{.ID}}&quot; \
+  --log-opt labels=environment \
+  --label environment=prod \
+  --log-driver syslog \
+  myapp</code></pre><p>This produces syslog entries with the container name, short ID, and environment label for easy filtering.</p>
         </div>
         </div>
       </details>
@@ -516,7 +521,7 @@
         </div>
         <div class="section">
           <h3>Key concepts</h3>
-          <p>Set non-blocking mode with --log-opt mode=non-blocking and control the buffer with --log-opt max-buffer-size=4m. Blocking mode guarantees no log loss but risks application slowdown. Non-blocking prioritizes application performance over log completeness.</p>
+          <p>Set non-blocking mode with:</p><pre><code>--log-opt mode=non-blocking --log-opt max-buffer-size=4m</code></pre><p>Blocking mode guarantees no log loss but risks application slowdown. Non-blocking prioritizes application performance over log completeness.</p>
         </div>
         <div class="section">
           <h3>Why it matters</h3>
@@ -547,7 +552,15 @@
         </div>
         <div class="section">
           <h3>Example</h3>
-          <p>Under a service: logging: { driver: json-file, options: { max-size: '10m', max-file: '3', tag: '{{.Name}}' } }. For a centralized setup, use driver: fluentd with options pointing to your Fluentd service defined in the same Compose file.</p>
+          <p>Configure per-service logging in compose.yaml:</p><pre><code>services:
+  web:
+    image: myapp
+    logging:
+      driver: json-file
+      options:
+        max-size: &quot;10m&quot;
+        max-file: &quot;3&quot;
+        tag: &quot;{{.Name}}&quot;</code></pre><p>For a centralized setup, use driver: fluentd with options pointing to your Fluentd service defined in the same Compose file.</p>
         </div>
         </div>
       </details>
@@ -605,7 +618,7 @@
         </div>
         <div class="section">
           <h3>Example</h3>
-          <p>A Node.js app using pino outputs: {&quot;level&quot;:30,&quot;time&quot;:1234567890,&quot;msg&quot;:&quot;request completed&quot;,&quot;req_id&quot;:&quot;abc-123&quot;,&quot;duration&quot;:45}. In Grafana or Kibana, you can filter by level, graph duration over time, and trace requests by req_id across all services.</p>
+          <p>A Node.js app using pino outputs structured JSON:</p><pre><code>{&quot;level&quot;:30,&quot;time&quot;:1234567890,&quot;msg&quot;:&quot;request completed&quot;,&quot;req_id&quot;:&quot;abc-123&quot;,&quot;duration&quot;:45}</code></pre><p>In Grafana or Kibana, you can filter by level, graph duration over time, and trace requests by req_id across all services.</p>
         </div>
         <div class="section">
           <h3>Why it matters</h3>
@@ -628,7 +641,7 @@
         <div class="details">
         <div class="section">
           <h3>How it works</h3>
-          <p>Edit /etc/docker/daemon.json to set log-driver and log-opts at the daemon level. These defaults apply to every new container unless overridden at runtime. Changes require restarting the Docker daemon (systemctl restart docker).</p>
+          <p>Edit /etc/docker/daemon.json to set log-driver and log-opts at the daemon level. These defaults apply to every new container unless overridden at runtime. Changes require restarting the Docker daemon:</p><pre><code>systemctl restart docker</code></pre>
         </div>
         <div class="section">
           <h3>Key concepts</h3>
@@ -636,7 +649,13 @@
         </div>
         <div class="section">
           <h3>Example</h3>
-          <p>In daemon.json: { &quot;log-driver&quot;: &quot;local&quot;, &quot;log-opts&quot;: { &quot;max-size&quot;: &quot;20m&quot;, &quot;max-file&quot;: &quot;3&quot; } }. This uses the efficient local driver and caps every container at 60MB of logs. Override for verbose debug containers: docker run --log-driver json-file --log-opt max-size=100m debugapp.</p>
+          <p>Configure daemon.json with the local driver and rotation:</p><pre><code>{
+  &quot;log-driver&quot;: &quot;local&quot;,
+  &quot;log-opts&quot;: {
+    &quot;max-size&quot;: &quot;20m&quot;,
+    &quot;max-file&quot;: &quot;3&quot;
+  }
+}</code></pre><p>This caps every container at 60MB of logs. Override for verbose debug containers:</p><pre><code>docker run --log-driver json-file --log-opt max-size=100m debugapp</code></pre>
         </div>
         <div class="section">
           <h3>Why it matters</h3>
@@ -654,7 +673,7 @@
 
       const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
       let sizeIdx = SIZES.indexOf(savedSize);
-      if (sizeIdx < 0) sizeIdx = 2;
+      if (sizeIdx < 0) sizeIdx = 4;
 
       let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
 

@@ -315,7 +315,7 @@
 <body>
   <nav class="toolbar">
     <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
-    <span class="font-label" id="font-label">16</span>
+    <span class="font-label" id="font-label">18</span>
     <button type="button" id="font-up" aria-label="Increase font size">A+</button>
     <span class="separator"></span>
     <button type="button" id="theme-toggle" aria-label="Toggle theme">
@@ -607,7 +607,7 @@
 
       const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
       let sizeIdx = SIZES.indexOf(savedSize);
-      if (sizeIdx < 0) sizeIdx = 2;
+      if (sizeIdx < 0) sizeIdx = 4;
 
       let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
 

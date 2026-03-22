@@ -315,7 +315,7 @@
 <body>
   <nav class="toolbar">
     <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
-    <span class="font-label" id="font-label">16</span>
+    <span class="font-label" id="font-label">18</span>
     <button type="button" id="font-up" aria-label="Increase font size">A+</button>
     <span class="separator"></span>
     <button type="button" id="theme-toggle" aria-label="Toggle theme">
@@ -342,7 +342,7 @@
         <div class="details">
         <div class="section">
           <h3>What it scaffolds</h3>
-          <p>Run &quot;helm create mychart&quot; and Helm produces: Chart.yaml (metadata), values.yaml (defaults), charts/ (dependency tarballs), templates/ (Go template manifests), templates/NOTES.txt (post-install message), templates/_helpers.tpl (reusable named templates), templates/deployment.yaml, service.yaml, serviceaccount.yaml, hpa.yaml, ingress.yaml, templates/tests/test-connection.yaml, and .helmignore.</p>
+          <p>Run:</p><pre><code>helm create mychart</code></pre><p>Helm produces: Chart.yaml (metadata), values.yaml (defaults), charts/ (dependency tarballs), templates/ (Go template manifests), templates/NOTES.txt (post-install message), templates/_helpers.tpl (reusable named templates), templates/deployment.yaml, service.yaml, serviceaccount.yaml, hpa.yaml, ingress.yaml, templates/tests/test-connection.yaml, and .helmignore.</p>
         </div>
         <div class="section">
           <h3>Directory walkthrough</h3>
@@ -373,7 +373,9 @@
         <div class="details">
         <div class="section">
           <h3>Required fields</h3>
-          <p>apiVersion: v2 (required for Helm 3). name: must match the directory name. version: must follow SemVer 2.0.0 (e.g., 1.2.3). These three fields are mandatory — Helm rejects a chart without them.</p>
+          <p>Three mandatory fields:</p><pre><code>apiVersion: v2
+name: mychart
+version: 1.2.3</code></pre><p>apiVersion: v2 is required for Helm 3. name must match the directory name. version must follow SemVer 2.0.0. Helm rejects a chart without them.</p>
         </div>
         <div class="section">
           <h3>Important optional fields</h3>
@@ -385,7 +387,12 @@
         </div>
         <div class="section">
           <h3>Dependencies block</h3>
-          <p>Listed under dependencies: as an array. Each entry has: name, version (SemVer range like &quot;~12.1.0&quot;), repository (URL, oci://, or file:// for local). Optional: condition (boolean path), tags (group toggling), alias (rename), import-values. Run helm dependency update to download into charts/ and generate Chart.lock.</p>
+          <p>Listed under dependencies: as an array:</p><pre><code>dependencies:
+  - name: postgresql
+    version: &quot;~12.1.0&quot;
+    repository: &quot;oci://registry-1.docker.io/bitnamicharts&quot;
+    condition: postgresql.enabled
+    alias: db</code></pre><p>Optional fields: condition (boolean path), tags (group toggling), alias (rename), import-values.</p><pre><code>helm dependency update</code></pre><p>This downloads into charts/ and generates Chart.lock.</p>
         </div>
         <div class="section">
           <h3>Gotcha</h3>
@@ -408,11 +415,14 @@
         <div class="details">
         <div class="section">
           <h3>Actions</h3>
-          <p>Everything between {{ and }} is an action. Plain text outside passes through unchanged. Actions can output values: {{ .Values.name }}, call functions: {{ quote .Values.name }}, or control flow: {{ if .Values.enabled }}...{{ end }}. Comments: {{/* comment */}}.</p>
+          <p>Everything between {{ and }} is an action. Plain text outside passes through unchanged. Actions can output values, call functions, or control flow:</p><pre><code>{{ .Values.name }}
+{{ quote .Values.name }}
+{{ if .Values.enabled }}...{{ end }}
+{{/* comment */}}</code></pre>
         </div>
         <div class="section">
           <h3>Pipelines</h3>
-          <p>Pipelines chain functions with |, passing the previous result as the last argument. Example: {{ .Values.name | default &quot;app&quot; | quote }} applies default then quote. Pipelines are the idiomatic way to compose functions in Helm templates.</p>
+          <p>Pipelines chain functions with |, passing the previous result as the last argument:</p><pre><code>{{ .Values.name | default &quot;app&quot; | quote }}</code></pre><p>Pipelines are the idiomatic way to compose functions in Helm templates.</p>
         </div>
         <div class="section">
           <h3>Whitespace control</h3>
@@ -420,7 +430,10 @@
         </div>
         <div class="section">
           <h3>Common patterns</h3>
-          <p>{{- if .Values.tolerations }}\ntolerations:\n{{ toYaml .Values.tolerations | indent 2 }}\n{{- end }} — conditionally include a block. {{ include &quot;mychart.labels&quot; . | nindent 4 }} — include a named template with proper indentation. Use nindent (not indent) when the include is inline after a key.</p>
+          <p>Conditionally include a block:</p><pre><code>{{- if .Values.tolerations }}
+tolerations:
+{{ toYaml .Values.tolerations | indent 2 }}
+{{- end }}</code></pre><p>Include a named template with proper indentation:</p><pre><code>{{ include &quot;mychart.labels&quot; . | nindent 4 }}</code></pre><p>Use nindent (not indent) when the include is inline after a key.</p>
         </div>
         <div class="section">
           <h3>Gotcha</h3>
@@ -443,23 +456,36 @@
         <div class="details">
         <div class="section">
           <h3>Release</h3>
-          <p>.Release.Name — the release name. .Release.Namespace — target namespace. .Release.IsInstall / .Release.IsUpgrade — boolean lifecycle flags. .Release.Revision — integer starting at 1. .Release.Service — always &quot;Helm&quot;. Use Release.Name for resource naming.</p>
+          <p>Release object properties:</p><pre><code>.Release.Name
+.Release.Namespace
+.Release.IsInstall
+.Release.IsUpgrade
+.Release.Revision
+.Release.Service</code></pre><p>.Release.Service is always &quot;Helm&quot;. Use Release.Name for resource naming.</p>
         </div>
         <div class="section">
           <h3>Values</h3>
-          <p>.Values contains the merged result of defaults, parent overrides, -f files, and --set flags. Access nested values with dot notation: .Values.image.repository. Always use default or with blocks to guard against nil values for optional nested keys.</p>
+          <p>.Values contains the merged result of defaults, parent overrides, -f files, and --set flags. Access nested values with dot notation:</p><pre><code>{{ .Values.image.repository }}</code></pre><p>Always use default or with blocks to guard against nil values for optional nested keys.</p>
         </div>
         <div class="section">
           <h3>Chart</h3>
-          <p>.Chart exposes Chart.yaml fields. Common: .Chart.Name, .Chart.Version, .Chart.AppVersion. Fields are title-cased when accessed — &quot;name&quot; becomes .Chart.Name. You cannot modify Chart values in templates.</p>
+          <p>.Chart exposes Chart.yaml fields:</p><pre><code>{{ .Chart.Name }}
+{{ .Chart.Version }}
+{{ .Chart.AppVersion }}</code></pre><p>Fields are title-cased when accessed — &quot;name&quot; becomes .Chart.Name. You cannot modify Chart values in templates.</p>
         </div>
         <div class="section">
           <h3>Capabilities and Template</h3>
-          <p>.Capabilities.KubeVersion.Version — cluster K8s version. .Capabilities.APIVersions.Has &quot;batch/v1&quot; — check API availability. .Template.Name — full path like &quot;mychart/templates/deployment.yaml&quot;. .Template.BasePath — the templates directory.</p>
+          <p>Check cluster capabilities:</p><pre><code>{{ .Capabilities.KubeVersion.Version }}
+{{ .Capabilities.APIVersions.Has &quot;batch/v1&quot; }}
+{{ .Template.Name }}
+{{ .Template.BasePath }}</code></pre><p>.Template.Name gives the full path like &quot;mychart/templates/deployment.yaml&quot;.</p>
         </div>
         <div class="section">
           <h3>Files</h3>
-          <p>.Files.Get &quot;config.ini&quot; — file contents as string. .Files.Glob &quot;conf/*.toml&quot; — matching files. .Files.AsConfig — format as ConfigMap data. .Files.AsSecrets — base64-encoded. .Files.Lines — line-by-line iteration. Cannot access files in templates/ or excluded by .helmignore.</p>
+          <p>Access non-template files:</p><pre><code>{{ .Files.Get &quot;config.ini&quot; }}
+{{ .Files.Glob &quot;conf/*.toml&quot; }}
+{{ (.Files.Glob &quot;conf/*&quot;).AsConfig }}
+{{ (.Files.Glob &quot;conf/*&quot;).AsSecrets }}</code></pre><p>.Files.Lines provides line-by-line iteration. Cannot access files in templates/ or excluded by .helmignore.</p>
         </div>
         </div>
       </details>
@@ -478,19 +504,25 @@
         <div class="details">
         <div class="section">
           <h3>String and formatting</h3>
-          <p>quote / squote — wrap in quotes. upper / lower — case conversion. replace — substitution. trim / trimPrefix / trimSuffix. contains / hasPrefix / hasSuffix — boolean tests. printf — format strings: {{ printf &quot;%s-%s&quot; .Release.Name .Chart.Name }}.</p>
+          <p>quote / squote — wrap in quotes. upper / lower — case conversion. replace — substitution. trim / trimPrefix / trimSuffix. contains / hasPrefix / hasSuffix — boolean tests.</p><pre><code>{{ printf &quot;%s-%s&quot; .Release.Name .Chart.Name }}</code></pre>
         </div>
         <div class="section">
           <h3>YAML and indentation</h3>
-          <p>toYaml — converts any object to YAML string. Almost always piped to indent or nindent: {{ .Values.resources | toYaml | nindent 6 }}. nindent prepends a newline then indents — use when inline after a key. indent adds spaces without a leading newline. toJson / fromJson / fromYaml for format conversion.</p>
+          <p>toYaml converts any object to YAML string. Almost always piped to indent or nindent:</p><pre><code>{{ .Values.resources | toYaml | nindent 6 }}</code></pre><p>nindent prepends a newline then indents — use when inline after a key. indent adds spaces without a leading newline. toJson / fromJson / fromYaml for format conversion.</p>
         </div>
         <div class="section">
           <h3>Defaults and validation</h3>
-          <p>default — fallback: {{ .Values.port | default 8080 }}. required — halt if empty: {{ required &quot;image.repository is required&quot; .Values.image.repository }}. coalesce — first non-empty value. empty — true for zero/nil/empty. fail — abort unconditionally.</p>
+          <p>Fallback values, required fields, and error handling:</p><pre><code>{{ .Values.port | default 8080 }}
+{{ required &quot;image.repository is required&quot; .Values.image.repository }}
+{{ coalesce .Values.a .Values.b &quot;fallback&quot; }}
+{{ fail &quot;something went wrong&quot; }}</code></pre>
         </div>
         <div class="section">
           <h3>Advanced functions</h3>
-          <p>tpl — evaluate a string as a template: {{ tpl .Values.myTemplate . }}. lookup — query live cluster resources (empty with helm template). ternary — conditional: {{ ternary &quot;yes&quot; &quot;no&quot; .Values.enabled }}. include — render named template as pipeable string.</p>
+          <p>Template evaluation and conditional logic:</p><pre><code>{{ tpl .Values.myTemplate . }}
+{{ lookup &quot;v1&quot; &quot;ConfigMap&quot; &quot;ns&quot; &quot;name&quot; }}
+{{ ternary &quot;yes&quot; &quot;no&quot; .Values.enabled }}
+{{ include &quot;mychart.labels&quot; . }}</code></pre><p>tpl evaluates a string as a template. lookup queries live cluster resources (empty with helm template).</p>
         </div>
         <div class="section">
           <h3>Data structure functions</h3>
@@ -513,19 +545,25 @@
         <div class="details">
         <div class="section">
           <h3>if/else</h3>
-          <p>{{ if PIPELINE }}...{{ else if PIPELINE }}...{{ else }}...{{ end }}. A pipeline is false for: boolean false, 0, empty string, nil, or empty collection. Operators: eq, ne, lt, gt, le, ge, and, or, not. Example: {{ if and .Values.ingress.enabled (eq .Values.ingress.className &quot;nginx&quot;) }}.</p>
+          <p>Conditional blocks:</p><pre><code>{{ if PIPELINE }}...{{ else if PIPELINE }}...{{ else }}...{{ end }}</code></pre><p>A pipeline is false for: boolean false, 0, empty string, nil, or empty collection. Operators: eq, ne, lt, gt, le, ge, and, or, not.</p><pre><code>{{ if and .Values.ingress.enabled (eq .Values.ingress.className &quot;nginx&quot;) }}</code></pre>
         </div>
         <div class="section">
           <h3>with (scope modifier)</h3>
-          <p>{{ with .Values.favorite }}...{{ end }} sets dot (.) to .Values.favorite inside the block. Use {{ .drink }} instead of the full path. Critical: you cannot access outer objects with dot — use $ for root: {{ $.Release.Name }}. If the pipeline is empty/nil, the block is skipped (acts like an if).</p>
+          <p>Sets dot (.) to a new scope:</p><pre><code>{{ with .Values.favorite }}
+  drink: {{ .drink }}
+{{ end }}</code></pre><p>Critical: you cannot access outer objects with dot — use $ for root: {{ $.Release.Name }}. If the pipeline is empty/nil, the block is skipped (acts like an if).</p>
         </div>
         <div class="section">
           <h3>range (loops)</h3>
-          <p>{{ range .Values.servers }}...{{ end }} iterates a list, setting dot to each element. For key-value: {{ range $key, $val := .Values.labels }}. Like with, range changes dot scope — use $ for root. Create inline lists with tuple: {{ range tuple &quot;small&quot; &quot;medium&quot; &quot;large&quot; }}.</p>
+          <p>Iterate over lists and maps:</p><pre><code>{{ range .Values.servers }}...{{ end }}
+{{ range $key, $val := .Values.labels }}...{{ end }}
+{{ range tuple &quot;small&quot; &quot;medium&quot; &quot;large&quot; }}...{{ end }}</code></pre><p>Like with, range changes dot scope — use $ for root.</p>
         </div>
         <div class="section">
           <h3>Scope and the dollar sign</h3>
-          <p>The dot (.) is the current scope — root at top level, changes inside with and range. The $ always points to root and never changes. Pattern: {{ range .Values.items }}name: {{ $.Release.Name }}-{{ . }}{{ end }}. This is the most common source of confusion in Helm templates.</p>
+          <p>The dot (.) is the current scope — root at top level, changes inside with and range. The $ always points to root and never changes:</p><pre><code>{{ range .Values.items }}
+name: {{ $.Release.Name }}-{{ . }}
+{{ end }}</code></pre><p>This is the most common source of confusion in Helm templates.</p>
         </div>
         <div class="section">
           <h3>Gotcha</h3>
@@ -548,15 +586,21 @@
         <div class="details">
         <div class="section">
           <h3>Defining templates</h3>
-          <p>{{ define &quot;mychart.labels&quot; }}...{{ end }} creates a named template. By convention, definitions live in templates/_helpers.tpl. Add documentation comments: {{/* Generate standard labels */}}. You can split helpers across multiple _ files.</p>
+          <p>Create named templates in _helpers.tpl:</p><pre><code>{{/* Generate standard labels */}}
+{{ define &quot;mychart.labels&quot; }}
+app.kubernetes.io/name: {{ .Chart.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{ end }}</code></pre><p>You can split helpers across multiple _ files.</p>
         </div>
         <div class="section">
           <h3>template vs include</h3>
-          <p>{{ template &quot;mychart.labels&quot; . }} inserts output directly — cannot be piped. {{ include &quot;mychart.labels&quot; . }} returns a string — CAN be piped: {{ include &quot;mychart.labels&quot; . | nindent 4 }}. Always prefer include over template for indentation control.</p>
+          <p>template inserts output directly — cannot be piped. include returns a string — CAN be piped:</p><pre><code>{{ template &quot;mychart.labels&quot; . }}
+{{ include &quot;mychart.labels&quot; . | nindent 4 }}</code></pre><p>Always prefer include over template for indentation control.</p>
         </div>
         <div class="section">
           <h3>Context passing</h3>
-          <p>The second argument sets the scope inside the named template. {{ include &quot;mychart.labels&quot; . }} passes full root context. {{ include &quot;mychart.labels&quot; .Values.app }} passes only that subtree. Forgetting to pass context makes dot nil, causing nil pointer errors.</p>
+          <p>The second argument sets the scope inside the named template:</p><pre><code>{{ include &quot;mychart.labels&quot; . }}
+{{ include &quot;mychart.labels&quot; .Values.app }}</code></pre><p>The first passes full root context. The second passes only that subtree. Forgetting to pass context makes dot nil, causing nil pointer errors.</p>
         </div>
         <div class="section">
           <h3>Naming conventions</h3>
@@ -595,7 +639,7 @@
         </div>
         <div class="section">
           <h3>Type safety</h3>
-          <p>Quote string values to prevent YAML coercion: env: &quot;true&quot; vs env: true (boolean). Use {{ .Values.name | quote }} in templates to ensure strings stay strings. Port numbers used in env vars should be stored as strings and converted with {{ int }}.</p>
+          <p>Quote string values to prevent YAML coercion: env: &quot;true&quot; vs env: true (boolean). In templates, use quote to ensure strings stay strings:</p><pre><code>{{ .Values.name | quote }}</code></pre><p>Port numbers used in env vars should be stored as strings and converted with {{ int }}.</p>
         </div>
         <div class="section">
           <h3>Override-friendly design</h3>
@@ -626,7 +670,13 @@
         </div>
         <div class="section">
           <h3>Example</h3>
-          <p>A conditional block: {{- if .Values.ingress.enabled }}Visit http://{{ .Values.ingress.host }}{{- else }}Run kubectl port-forward svc/{{ include &quot;mychart.fullname&quot; . }} 8080:{{ .Values.service.port }} then visit http://127.0.0.1:8080{{- end }}</p>
+          <p>A conditional block:</p><pre><code>{{- if .Values.ingress.enabled }}
+Visit http://{{ .Values.ingress.host }}
+{{- else }}
+Run:
+  kubectl port-forward svc/{{ include &quot;mychart.fullname&quot; . }} 8080:{{ .Values.service.port }}
+Then visit http://127.0.0.1:8080
+{{- end }}</code></pre>
         </div>
         <div class="section">
           <h3>Gotcha</h3>
@@ -649,19 +699,24 @@
         <div class="details">
         <div class="section">
           <h3>helm lint</h3>
-          <p>Static analysis on chart structure and templates. Reports [ERROR] for install failures and [WARNING] for convention violations. Lint with custom values: helm lint ./mychart -f prod-values.yaml. Integrate into CI.</p>
+          <p>Static analysis on chart structure and templates. Reports [ERROR] for install failures and [WARNING] for convention violations.</p><pre><code>helm lint ./mychart -f prod-values.yaml</code></pre><p>Integrate into CI.</p>
         </div>
         <div class="section">
           <h3>helm template</h3>
-          <p>Renders all templates locally without a cluster. Use --show-only for a single file. --set and -f test different values. --debug shows output even on failure. Your primary debugging tool — run constantly while developing.</p>
+          <p>Renders all templates locally without a cluster:</p><pre><code>helm template myapp ./mychart --show-only templates/deployment.yaml
+helm template myapp ./mychart --set replicaCount=3
+helm template myapp ./mychart --debug</code></pre><p>Your primary debugging tool — run constantly while developing.</p>
         </div>
         <div class="section">
           <h3>helm install --dry-run</h3>
-          <p>Requires a live cluster. Renders templates AND sends to the K8s API for validation without creating resources. Use --dry-run=server (Helm 3.13+) for server-side validation. Catches invalid fields and wrong API versions.</p>
+          <p>Requires a live cluster. Renders templates AND sends to the K8s API for validation without creating resources:</p><pre><code>helm install --dry-run=server myapp ./mychart</code></pre><p>Use --dry-run=server (Helm 3.13+) for server-side validation. Catches invalid fields and wrong API versions.</p>
         </div>
         <div class="section">
           <h3>Recommended workflow</h3>
-          <p>1) helm lint for quick checks, 2) helm template to preview output, 3) helm template | kubectl apply --dry-run=client -f - for local K8s schema validation, 4) helm install --dry-run against a real cluster. In CI, run all four.</p>
+          <p>Progressive validation:</p><pre><code>helm lint ./mychart
+helm template myapp ./mychart
+helm template myapp ./mychart | kubectl apply --dry-run=client -f -
+helm install --dry-run myapp ./mychart</code></pre><p>In CI, run all four.</p>
         </div>
         <div class="section">
           <h3>Gotcha</h3>
@@ -684,7 +739,9 @@
         <div class="details">
         <div class="section">
           <h3>helm package</h3>
-          <p>Produces mychart-1.0.0.tgz (name-version from Chart.yaml). Options: --destination, --dependency-update, --sign (PGP provenance file), --app-version override. The .tgz can be pushed to OCI registries with helm push.</p>
+          <p>Produces a versioned archive:</p><pre><code>helm package ./mychart
+helm package ./mychart --destination ./dist --dependency-update
+helm package ./mychart --sign --key mykey</code></pre><p>The .tgz can be pushed to OCI registries with helm push.</p>
         </div>
         <div class="section">
           <h3>.helmignore file</h3>
@@ -715,19 +772,25 @@
         <div class="details">
         <div class="section">
           <h3>Hook types</h3>
-          <p>Nine annotations for helm.sh/hook: pre-install, post-install, pre-delete, post-delete, pre-upgrade, post-upgrade, pre-rollback, post-rollback, test. A single resource can declare multiple: &quot;helm.sh/hook&quot;: pre-install,pre-upgrade.</p>
+          <p>Nine annotations for helm.sh/hook: pre-install, post-install, pre-delete, post-delete, pre-upgrade, post-upgrade, pre-rollback, post-rollback, test. A single resource can declare multiple:</p><pre><code>annotations:
+  &quot;helm.sh/hook&quot;: pre-install,pre-upgrade</code></pre>
         </div>
         <div class="section">
           <h3>Hook weights and ordering</h3>
-          <p>&quot;helm.sh/hook-weight&quot;: &quot;-5&quot; (must be a string). Execute in ascending order — negative first. Default weight is 0. Use for sequencing: -10 backup, -5 migration, 0 cache warming.</p>
+          <p>Execute in ascending order — negative first:</p><pre><code>annotations:
+  &quot;helm.sh/hook-weight&quot;: &quot;-5&quot;</code></pre><p>Default weight is 0. Use for sequencing: -10 backup, -5 migration, 0 cache warming.</p>
         </div>
         <div class="section">
           <h3>Delete policies</h3>
-          <p>&quot;helm.sh/hook-delete-policy&quot;: before-hook-creation (default), hook-succeeded, hook-failed. Combine: &quot;hook-succeeded,hook-failed&quot; for always-cleanup. Without a policy, hook resources accumulate.</p>
+          <p>Control hook cleanup:</p><pre><code>annotations:
+  &quot;helm.sh/hook-delete-policy&quot;: before-hook-creation</code></pre><p>Options: before-hook-creation (default), hook-succeeded, hook-failed. Combine: &quot;hook-succeeded,hook-failed&quot; for always-cleanup. Without a policy, hook resources accumulate.</p>
         </div>
         <div class="section">
           <h3>Example: migration Job</h3>
-          <p>A Job with annotations helm.sh/hook: pre-upgrade, hook-weight: &quot;-5&quot;, hook-delete-policy: before-hook-creation,hook-succeeded. Runs migration before app pods update, cleans up on success.</p>
+          <p>A Job with annotations:</p><pre><code>annotations:
+  &quot;helm.sh/hook&quot;: pre-upgrade
+  &quot;helm.sh/hook-weight&quot;: &quot;-5&quot;
+  &quot;helm.sh/hook-delete-policy&quot;: before-hook-creation,hook-succeeded</code></pre><p>Runs migration before app pods update, cleans up on success.</p>
         </div>
         <div class="section">
           <h3>Gotcha</h3>
@@ -754,11 +817,14 @@
         </div>
         <div class="section">
           <h3>Parent overrides</h3>
-          <p>In the parent's values.yaml, nest values under the subchart's name: postgresql: { auth: { postgresPassword: secret } }. The subchart accesses them normally as .Values.auth.postgresPassword.</p>
+          <p>In the parent's values.yaml, nest values under the subchart's name:</p><pre><code>postgresql:
+  auth:
+    postgresPassword: secret</code></pre><p>The subchart accesses them normally as .Values.auth.postgresPassword.</p>
         </div>
         <div class="section">
           <h3>Global values</h3>
-          <p>Values under the reserved global: key are accessible from ALL charts using .Values.global.*. Define in parent: global: { imageRegistry: myregistry.io }. Globals flow down the entire dependency tree.</p>
+          <p>Values under the reserved global: key are accessible from ALL charts using .Values.global.*:</p><pre><code>global:
+  imageRegistry: myregistry.io</code></pre><p>Globals flow down the entire dependency tree.</p>
         </div>
         <div class="section">
           <h3>Shared templates</h3>
@@ -785,7 +851,11 @@
         </div>
         <div class="section">
           <h3>Common validations</h3>
-          <p>Type enforcement: {&quot;replicaCount&quot;: {&quot;type&quot;: &quot;integer&quot;}}. Required fields. Enums: {&quot;pullPolicy&quot;: {&quot;enum&quot;: [&quot;Always&quot;, &quot;IfNotPresent&quot;, &quot;Never&quot;]}}. Range: {&quot;port&quot;: {&quot;minimum&quot;: 1, &quot;maximum&quot;: 65535}}. String patterns for naming conventions.</p>
+          <p>Type enforcement, enums, and ranges:</p><pre><code>{
+  &quot;replicaCount&quot;: { &quot;type&quot;: &quot;integer&quot; },
+  &quot;pullPolicy&quot;: { &quot;enum&quot;: [&quot;Always&quot;, &quot;IfNotPresent&quot;, &quot;Never&quot;] },
+  &quot;port&quot;: { &quot;minimum&quot;: 1, &quot;maximum&quot;: 65535 }
+}</code></pre><p>Also supports required fields and string patterns for naming conventions.</p>
         </div>
         <div class="section">
           <h3>Gotcha</h3>
@@ -820,7 +890,7 @@
         </div>
         <div class="section">
           <h3>Gotcha</h3>
-          <p>Since Helm won't upgrade CRDs, use kubectl apply -f crds/ manually. This is deliberate — CRDs are cluster-scoped and automatic upgrades could break other releases. The separate CRD chart approach avoids these limitations.</p>
+          <p>Since Helm won't upgrade CRDs, use:</p><pre><code>kubectl apply -f crds/</code></pre><p>manually. This is deliberate — CRDs are cluster-scoped and automatic upgrades could break other releases. The separate CRD chart approach avoids these limitations.</p>
         </div>
         </div>
       </details>
@@ -851,7 +921,8 @@
         </div>
         <div class="section">
           <h3>ConfigMaps and auto-rollout</h3>
-          <p>Create ConfigMaps from files: {{ (.Files.Glob &quot;config/*&quot;).AsConfig | nindent 2 }}. To trigger pod restart on ConfigMap changes, add a pod annotation: checksum/config: {{ include (print $.Template.BasePath &quot;/configmap.yaml&quot;) . | sha256sum }}. This forces rolling updates when config changes.</p>
+          <p>Create ConfigMaps from files and trigger pod restart on config changes:</p><pre><code>data:
+  {{ (.Files.Glob &quot;config/*&quot;).AsConfig | nindent 2 }}</code></pre><p>Add a pod annotation to force rolling updates:</p><pre><code>checksum/config: {{ include (print $.Template.BasePath &quot;/configmap.yaml&quot;) . | sha256sum }}</code></pre>
         </div>
         </div>
       </details>
@@ -865,7 +936,7 @@
 
       const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
       let sizeIdx = SIZES.indexOf(savedSize);
-      if (sizeIdx < 0) sizeIdx = 2;
+      if (sizeIdx < 0) sizeIdx = 4;
 
       let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
 
