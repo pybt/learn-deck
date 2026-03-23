@@ -9,7 +9,7 @@ import { golangIntroduction } from "./data/golang/introduction";
 import { golangQuickStart } from "./data/golang/quick-start";
 import { helm } from "./data/helm/core";
 import { helmCreate } from "./data/helm/create";
-import { generateDeckHtml } from "./template";
+import { generateDeckHtml, generateIndexHtml } from "./template";
 
 const DECKS_DIR = join(import.meta.dir, "..", "decks");
 
@@ -63,6 +63,10 @@ const decks = [
     cards: golangQuickStart,
   },
 ];
+
+const indexHtml = generateIndexHtml(decks);
+await writeFile(join(DECKS_DIR, "index.html"), indexHtml);
+console.log("Generated: index.html");
 
 for (const deck of decks) {
   const dir = join(DECKS_DIR, deck.dir);
