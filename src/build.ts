@@ -5,6 +5,8 @@ import { aiAgentSkills } from "./data/ai/agent-skills";
 import { buildAgentSkills } from "./data/ai/build-agents";
 import { dockerFundamentals } from "./data/docker/fundamentals";
 import { dockerLogging } from "./data/docker/logging";
+import { golangIntroduction } from "./data/golang/introduction";
+import { golangQuickStart } from "./data/golang/quick-start";
 import { helm } from "./data/helm/core";
 import { helmCreate } from "./data/helm/create";
 import { generateDeckHtml } from "./template";
@@ -47,6 +49,18 @@ const decks = [
     id: "create",
     title: "Creating Helm Charts",
     cards: helmCreate,
+  },
+  {
+    dir: "golang",
+    id: "introduction",
+    title: "Go Introduction",
+    cards: golangIntroduction,
+  },
+  {
+    dir: "golang",
+    id: "quick-start",
+    title: "Go Quick Start",
+    cards: golangQuickStart,
   },
 ];
 

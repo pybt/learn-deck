@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Go Quick Start — AI Learn</title>
+  <style>
+    :root {
+      --bg: #f8f6f2;
+      --bg-card: #ffffff;
+      --border: #ddd7ce;
+      --border-header: #d4cfc7;
+      --text: #2d2a26;
+      --text-title: #1a1815;
+      --text-muted: #7a746a;
+      --text-summary: #5c564c;
+      --text-body: #3d3832;
+      --accent: #3b6b4f;
+      --accent-shadow: rgba(59, 107, 79, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.04);
+      --toolbar-bg: #ffffff;
+      --toolbar-border: #ddd7ce;
+      --btn-bg: #edeae5;
+      --btn-hover: #ddd7ce;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --border: #334155;
+      --border-header: #334155;
+      --text: #e2e8f0;
+      --text-title: #f1f5f9;
+      --text-muted: #64748b;
+      --text-summary: #94a3b8;
+      --text-body: #cbd5e1;
+      --accent: #6ee7a0;
+      --accent-shadow: rgba(110, 231, 160, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.2);
+      --toolbar-bg: #1e293b;
+      --toolbar-border: #334155;
+      --btn-bg: #334155;
+      --btn-hover: #475569;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Charter", "Georgia", "Cambria", "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      font-size: 1rem;
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--toolbar-border);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .toolbar button {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toolbar button:hover {
+      background: var(--btn-hover);
+    }
+
+    .toolbar .font-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .toolbar .separator {
+      width: 1px;
+      height: 1.25rem;
+      background: var(--toolbar-border);
+      margin: 0 0.25rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 2px solid var(--border-header);
+      transition: border-color 0.3s;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.625rem;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 1px 3px var(--card-shadow);
+    }
+
+    .card:has(details[open]) {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+
+    details summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      list-style: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-number {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s;
+    }
+
+    [data-theme="dark"] .card-number {
+      color: #0f172a;
+    }
+
+    .card-header {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-title);
+      display: block;
+    }
+
+    .summary {
+      margin-top: 0.3rem;
+      font-size: 0.875rem;
+      color: var(--text-summary);
+      line-height: 1.5;
+    }
+
+    .chevron {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    .chevron::before,
+    .chevron::after {
+      content: "";
+      position: absolute;
+      background: var(--accent);
+      border-radius: 1px;
+      top: 50%;
+      left: 50%;
+      transition: background 0.3s;
+    }
+
+    .chevron::before {
+      width: 14px;
+      height: 2px;
+      transform: translate(-50%, -50%);
+    }
+
+    .chevron::after {
+      width: 2px;
+      height: 14px;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    details[open] .chevron::after {
+      transform: translate(-50%, -50%) scaleY(0);
+    }
+
+    .details {
+      padding: 0 1.25rem 1.25rem;
+      padding-left: calc(1.25rem + 2rem + 0.75rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .section h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .section p {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      line-height: 1.65;
+    }
+
+    .section pre {
+      background: var(--btn-bg);
+      border-radius: 0.375rem;
+      padding: 0.75rem 1rem;
+      overflow-x: auto;
+      margin: 0.3rem 0 0;
+      transition: background 0.3s;
+    }
+
+    .section pre code {
+      font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-body);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.25rem 0.75rem 2rem;
+      }
+
+      .title {
+        font-size: 1rem;
+      }
+
+      .details {
+        padding-left: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="toolbar">
+    <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
+    <span class="font-label" id="font-label">18</span>
+    <button type="button" id="font-up" aria-label="Increase font size">A+</button>
+    <span class="separator"></span>
+    <button type="button" id="theme-toggle" aria-label="Toggle theme">
+      <span id="theme-icon">&#9790;</span>
+    </button>
+  </nav>
+  <div class="container">
+    <header>
+      <h1>Go Quick Start</h1>
+      <p>10 cards</p>
+    </header>
+    <ul class="card-list">
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">1</span>
+          <div class="card-header">
+            <span class="title">Setting Up a Go Project</span>
+            <p class="summary">Every Go project starts with `go mod init` to create a module — this sets up dependency tracking and gives your code an import path.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Run `go mod init &lt;module-path&gt;` to create a `go.mod` file that declares your module path and Go version. The module path is typically your repo URL (e.g., `github.com/yourname/myapp`). For local-only projects, any name works. This file, along with the auto-generated `go.sum`, should be committed to version control.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Creating and structuring a new project:</p><pre><code>mkdir myapp &amp;&amp; cd myapp
+go mod init github.com/yourname/myapp
+
+# Minimal layout:
+myapp/
+  go.mod
+  main.go
+
+# As it grows:
+myapp/
+  go.mod
+  cmd/server/main.go   # entry points
+  internal/auth/auth.go # private packages
+  handler/routes.go     # public packages</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>Start flat with a single `main.go` — add structure only as complexity grows. Use `internal/` to enforce package privacy (the compiler blocks external imports). Avoid the over-engineered `pkg/` directory unless you're building a library. Keep `cmd/` for multiple binaries in the same repo.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Go modules ensure reproducible builds across machines and CI. The module path is your project's identity — all imports are resolved through it. Getting this right from day one prevents painful refactoring later.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">2</span>
+          <div class="card-header">
+            <span class="title">Writing &amp; Running Your First Program</span>
+            <p class="summary">Go programs start in `package main` with a `func main()` entry point — use `go run` for quick iteration and `go build` to produce a binary.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Every executable must be in `package main` with a `func main()`. `go run main.go` compiles and executes in one step — great for development. `go build` produces a standalone binary with no runtime dependencies. The binary includes everything needed to run, making deployment trivial.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A complete Hello World with common patterns:</p><pre><code>package main
+
+import (
+    &quot;fmt&quot;
+    &quot;os&quot;
+    &quot;time&quot;
+)
+
+func main() {
+    name := &quot;World&quot;
+    if len(os.Args) &gt; 1 {
+        name = os.Args[1]
+    }
+    fmt.Printf(&quot;Hello, %s! Time: %s\n&quot;,
+        name, time.Now().Format(time.Kitchen))
+}</code></pre><pre><code>go run main.go          # run directly
+go run main.go Alice    # with args
+go build -o myapp .     # build binary
+./myapp                 # run binary</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>Use `go run .` (with a dot) to run all files in the current package, not just one file. The `:=` short declaration infers types — use it inside functions. `fmt.Printf` uses verbs like `%s` (string), `%d` (int), `%v` (any value), and `%+v` (struct with field names). Run `go fmt` to auto-format your code.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Go's fast compilation means `go run` feels almost interpreted, enabling rapid iteration. The single-binary output with zero dependencies is a massive deployment advantage over languages requiring runtimes or interpreters.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">3</span>
+          <div class="card-header">
+            <span class="title">Working with JSON</span>
+            <p class="summary">Go's `encoding/json` package maps JSON to structs using struct tags — `json.Marshal` encodes to JSON, `json.Unmarshal` decodes from JSON.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Define a struct with `json` tags to control field names. `json.Marshal` converts Go values to `[]byte` JSON. `json.Unmarshal` parses JSON bytes into Go structs. Fields must be exported (uppercase) to be serialized. Use `omitempty` to skip zero-value fields and `-` to exclude fields entirely.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Encoding and decoding JSON:</p><pre><code>type User struct {
+    ID        int    `json:&quot;id&quot;`
+    Name      string `json:&quot;name&quot;`
+    Email     string `json:&quot;email,omitempty&quot;`
+    Password  string `json:&quot;-&quot;` // never serialize
+}
+
+// Encode
+user := User{ID: 1, Name: &quot;Alice&quot;}
+data, err := json.Marshal(user)
+// {&quot;id&quot;:1,&quot;name&quot;:&quot;Alice&quot;}
+
+// Decode
+var u User
+err := json.Unmarshal(data, &amp;u)
+
+// Streaming (for HTTP bodies, files)
+err := json.NewDecoder(r.Body).Decode(&amp;u)
+err := json.NewEncoder(w).Encode(u)</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>Always pass a pointer to `Unmarshal`. Unknown JSON fields are silently ignored by default. Use `json.RawMessage` to defer parsing of nested objects. For HTTP handlers, prefer `json.NewDecoder`/`NewEncoder` over Marshal/Unmarshal to avoid buffering entire bodies. Struct field matching is case-insensitive in v1, but case-sensitive in the upcoming v2 — always use explicit tags.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>JSON is the lingua franca of REST APIs and configuration. Go's struct-tag approach gives you type-safe parsing with zero external dependencies. Getting JSON handling right is essential for any API, webhook, or config file work.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">4</span>
+          <div class="card-header">
+            <span class="title">HTTP Server Basics</span>
+            <p class="summary">Go's `net/http` package includes a production-grade HTTP server — since Go 1.22, the standard `ServeMux` supports method matching and path parameters.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Register handler functions on a `ServeMux` with patterns like `GET /users/{id}`. The enhanced routing (Go 1.22+) supports HTTP method prefixes, wildcard path parameters via `r.PathValue()`, and exact path matching with `{$}`. No external router needed for most applications.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>A basic REST API server:</p><pre><code>package main
+
+import (
+    &quot;encoding/json&quot;
+    &quot;log&quot;
+    &quot;net/http&quot;
+)
+
+func main() {
+    mux := http.NewServeMux()
+
+    mux.HandleFunc(&quot;GET /health&quot;, func(w http.ResponseWriter, r *http.Request) {
+        w.Write([]byte(&quot;ok&quot;))
+    })
+
+    mux.HandleFunc(&quot;GET /users/{id}&quot;, func(w http.ResponseWriter, r *http.Request) {
+        id := r.PathValue(&quot;id&quot;)
+        json.NewEncoder(w).Encode(map[string]string{&quot;id&quot;: id})
+    })
+
+    mux.HandleFunc(&quot;POST /users&quot;, func(w http.ResponseWriter, r *http.Request) {
+        var user map[string]string
+        json.NewDecoder(r.Body).Decode(&amp;user)
+        w.WriteHeader(http.StatusCreated)
+        json.NewEncoder(w).Encode(user)
+    })
+
+    log.Println(&quot;Listening on :8080&quot;)
+    log.Fatal(http.ListenAndServe(&quot;:8080&quot;, mux))
+}</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>Use `{$}` at the end of a pattern to match only the exact path (e.g., `GET /{$}` matches `/` but not `/anything`). Patterns with methods automatically return 405 for wrong methods. Set `Content-Type` headers before writing the response body. For production, configure timeouts: `&amp;http.Server{ReadTimeout: 5*time.Second, WriteTimeout: 10*time.Second}`.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Go's standard HTTP server is used in production by major companies without any wrapper framework. The 1.22+ routing enhancements eliminated the primary reason teams reached for third-party routers like chi or gorilla/mux. Fewer dependencies means less maintenance.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">5</span>
+          <div class="card-header">
+            <span class="title">HTTP Client &amp; API Calls</span>
+            <p class="summary">Go's `net/http` package provides a full HTTP client with connection pooling — always create a custom client with timeouts instead of using `http.DefaultClient`.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Create an `http.Client` with a timeout, build requests with `http.NewRequestWithContext`, and read the response body. The client automatically pools connections for reuse. Always close `resp.Body` with `defer` to prevent resource leaks.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Making a GET and POST request:</p><pre><code>client := &amp;http.Client{Timeout: 10 * time.Second}
+
+// GET request
+resp, err := client.Get(&quot;https://api.example.com/users&quot;)
+if err != nil {
+    log.Fatal(err)
+}
+defer resp.Body.Close()
+
+var users []User
+json.NewDecoder(resp.Body).Decode(&amp;users)
+
+// POST with JSON body
+data, _ := json.Marshal(User{Name: &quot;Alice&quot;})
+resp, err := client.Post(
+    &quot;https://api.example.com/users&quot;,
+    &quot;application/json&quot;,
+    bytes.NewReader(data),
+)
+defer resp.Body.Close()
+
+// With context and custom headers
+ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+defer cancel()
+req, _ := http.NewRequestWithContext(ctx, &quot;GET&quot;, url, nil)
+req.Header.Set(&quot;Authorization&quot;, &quot;Bearer &quot;+token)
+resp, err := client.Do(req)</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>The default client has NO timeout — always set one. Reuse a single `http.Client` across your application (it's safe for concurrent use and pools connections). Always check `resp.StatusCode` — non-2xx responses are not returned as errors. Use `context.WithTimeout` for per-request deadlines that respect cancellation chains.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Every backend service makes HTTP calls to APIs, databases, and other services. A misconfigured client without timeouts can hang indefinitely, causing cascading failures. Connection pooling and reuse are critical for performance under load.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">6</span>
+          <div class="card-header">
+            <span class="title">Testing with go test</span>
+            <p class="summary">Go has built-in testing via the `testing` package — test files end in `_test.go`, test functions start with `Test`, and table-driven tests are the idiomatic pattern.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Place tests in `*_test.go` files alongside the code they test. Test functions take `*testing.T` and use `t.Error`/`t.Fatal` to report failures. Run `go test ./...` to test all packages. Use `t.Run` for subtests and `t.Parallel()` for concurrent execution.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Table-driven test pattern:</p><pre><code>func Add(a, b int) int { return a + b }
+
+func TestAdd(t *testing.T) {
+    tests := []struct {
+        name     string
+        a, b     int
+        expected int
+    }{
+        {&quot;positive&quot;, 2, 3, 5},
+        {&quot;negative&quot;, -1, -2, -3},
+        {&quot;zero&quot;, 0, 0, 0},
+        {&quot;mixed&quot;, -1, 5, 4},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got := Add(tt.a, tt.b)
+            if got != tt.expected {
+                t.Errorf(&quot;Add(%d, %d) = %d, want %d&quot;,
+                    tt.a, tt.b, got, tt.expected)
+            }
+        })
+    }
+}</code></pre><pre><code>go test ./...              # all tests
+go test -v ./...           # verbose output
+go test -run TestAdd ./... # specific test
+go test -cover ./...       # with coverage</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>No assertion library needed — `if got != want` is idiomatic Go. Use `t.Helper()` in helper functions so errors report the caller's line. Use `t.Cleanup()` for teardown instead of `defer` in subtests. Always include edge cases (nil, empty, zero, boundary values) in table tests. Run `go test -race ./...` to detect data races.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Go's test tooling has zero dependencies and runs fast. Table-driven tests make adding new cases trivial — just add a row. The `-race` flag catches concurrency bugs that would be nightmares to debug in production. Built-in coverage means no excuses for untested code.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">7</span>
+          <div class="card-header">
+            <span class="title">Working with Files</span>
+            <p class="summary">Use `os.ReadFile`/`os.WriteFile` for simple operations and `os.Open` with `bufio.Scanner` for large files — always `defer` file handles closed.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>The `os` package provides file operations. `os.ReadFile` reads an entire file into memory. `os.WriteFile` writes bytes atomically. For large files, `os.Open` with `bufio.Scanner` reads line by line. The deprecated `ioutil` package (pre-1.16) has been replaced by `os` and `io` equivalents.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Common file operations:</p><pre><code>// Read entire file
+data, err := os.ReadFile(&quot;config.json&quot;)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Write file (creates or truncates)
+err := os.WriteFile(&quot;output.txt&quot;,
+    []byte(&quot;hello&quot;), 0644)
+
+// Read large file line by line
+f, err := os.Open(&quot;large.log&quot;)
+if err != nil {
+    log.Fatal(err)
+}
+defer f.Close()
+
+scanner := bufio.NewScanner(f)
+for scanner.Scan() {
+    line := scanner.Text()
+    fmt.Println(line)
+}
+if err := scanner.Err(); err != nil {
+    log.Fatal(err)
+}
+
+// Check if file exists
+if _, err := os.Stat(&quot;file.txt&quot;); errors.Is(err, os.ErrNotExist) {
+    fmt.Println(&quot;file does not exist&quot;)
+}</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>Use `0644` for regular files and `0755` for executables when setting permissions. Always check `scanner.Err()` after the scan loop. For safe writes, write to a temp file first then `os.Rename` — this prevents corruption on crashes. Use `filepath.Join` (not string concatenation) for cross-platform paths.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>File I/O is fundamental for configs, logs, data processing, and caching. Choosing `ReadFile` vs streaming with `bufio` determines whether your service handles a 2GB log file or runs out of memory. Proper error handling and file closing prevent data loss and resource leaks.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">8</span>
+          <div class="card-header">
+            <span class="title">Environment Variables &amp; Config</span>
+            <p class="summary">Use `os.Getenv` to read environment variables for configuration following the twelve-factor app methodology — keep secrets out of code.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>`os.Getenv` returns the value of an env var or an empty string if unset. `os.LookupEnv` distinguishes between unset and empty. For structured configuration, define a config struct and populate it from environment variables at startup. Validate all required config before starting the application.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Config pattern with env vars:</p><pre><code>type Config struct {
+    Port      string
+    DBUrl     string
+    LogLevel  string
+}
+
+func LoadConfig() Config {
+    return Config{
+        Port:     getEnv(&quot;PORT&quot;, &quot;8080&quot;),
+        DBUrl:    mustEnv(&quot;DATABASE_URL&quot;),
+        LogLevel: getEnv(&quot;LOG_LEVEL&quot;, &quot;info&quot;),
+    }
+}
+
+func getEnv(key, fallback string) string {
+    if val, ok := os.LookupEnv(key); ok {
+        return val
+    }
+    return fallback
+}
+
+func mustEnv(key string) string {
+    val, ok := os.LookupEnv(key)
+    if !ok {
+        log.Fatalf(&quot;required env var %s is not set&quot;, key)
+    }
+    return val
+}</code></pre><pre><code>PORT=3000 DATABASE_URL=postgres://... go run .</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>Use `LookupEnv` over `Getenv` when you need to distinguish &quot;not set&quot; from &quot;set to empty&quot;. Create a `mustEnv` helper that fails fast for required variables. For local development, `github.com/joho/godotenv` loads `.env` files but never commit `.env` to version control. Keep all config loading in one place for auditability.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Environment-based configuration is the standard for containers, Kubernetes, and cloud platforms. Hardcoded config is a security risk and a deployment nightmare. The twelve-factor app pattern keeps your binary environment-agnostic, deployable anywhere from local dev to production.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">9</span>
+          <div class="card-header">
+            <span class="title">Building &amp; Cross-Compiling</span>
+            <p class="summary">Go compiles to a single static binary — cross-compile for any OS/architecture by setting `GOOS` and `GOARCH` environment variables.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Go compiles and links everything into one binary with no external dependencies. Cross-compilation is built into the toolchain — no extra tools needed. Set `GOOS` (operating system) and `GOARCH` (CPU architecture) before `go build`. Use `-ldflags` to embed version info and strip debug symbols.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Building for multiple platforms:</p><pre><code># Build for current platform
+go build -o myapp .
+
+# Cross-compile for Linux (from macOS/Windows)
+GOOS=linux GOARCH=amd64 go build -o myapp-linux .
+
+# Build for Apple Silicon Mac
+GOOS=darwin GOARCH=arm64 go build -o myapp-mac .
+
+# Build for Windows
+GOOS=windows GOARCH=amd64 go build -o myapp.exe .
+
+# Production build: strip debug info, embed version
+go build -ldflags=&quot;-s -w -X main.version=1.2.3&quot; -o myapp .
+
+# Disable CGO for fully static binary
+CGO_ENABLED=0 go build -o myapp .</code></pre>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>Set `CGO_ENABLED=0` for truly static binaries that work in `scratch` or `distroless` Docker images. Use `-ldflags=&quot;-s -w&quot;` to strip debug symbols and reduce binary size by ~30%. The `-X` linker flag injects build-time values (version, commit hash) without modifying source code. Always test cross-compiled binaries on the target platform.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Single-binary deployment is Go's superpower — no runtimes, no dependency managers on servers, no version conflicts. Cross-compilation from a single machine enables CI/CD pipelines that build for Linux, macOS, and Windows simultaneously. Static binaries are ideal for minimal container images.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">10</span>
+          <div class="card-header">
+            <span class="title">Using Third-Party Packages</span>
+            <p class="summary">Use `go get` to add dependencies and `go mod tidy` to clean them up — Go modules handle versioning and integrity verification automatically.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>Run `go get &lt;package&gt;@&lt;version&gt;` to add a dependency — this updates `go.mod` and `go.sum`. Import the package in your code and the toolchain resolves it. `go mod tidy` removes unused dependencies and adds missing ones. Since Go 1.24, use `go get -tool` to track CLI tool dependencies in your module.</p>
+        </div>
+        <div class="section">
+          <h3>Example</h3>
+          <p>Adding and using packages:</p><pre><code># Add a package
+go get github.com/rs/zerolog@latest
+
+# Add a specific version
+go get github.com/go-chi/chi/v5@v5.1.0
+
+# Add a CLI tool dependency (Go 1.24+)
+go get -tool golang.org/x/tools/cmd/stringer
+
+# Remove unused dependencies
+go mod tidy
+
+# Use in code
+import &quot;github.com/rs/zerolog/log&quot;
+
+func main() {
+    log.Info().Str(&quot;status&quot;, &quot;ready&quot;).Msg(&quot;server starting&quot;)
+}</code></pre>
+        </div>
+        <div class="section">
+          <h3>Popular packages to know</h3>
+          <p>Essential ecosystem packages:
+
+- **go-chi/chi** — lightweight router (if you need middleware chains beyond stdlib)
+- **rs/zerolog** or **uber-go/zap** — structured logging
+- **jackc/pgx** — PostgreSQL driver
+- **go-redis/redis** — Redis client
+- **stretchr/testify** — test assertions and mocks
+- **spf13/viper** — configuration management
+- **spf13/cobra** — CLI framework (powers kubectl, Hugo, GitHub CLI)
+- **golang.org/x/** — official extended libraries (sync, crypto, text)</p>
+        </div>
+        <div class="section">
+          <h3>Key tips</h3>
+          <p>Always commit both `go.mod` and `go.sum` to version control. Use `go mod tidy` before committing to keep dependencies clean. Pin major versions in imports (e.g., `chi/v5`) per Go's module compatibility convention. The `go.sum` file provides checksum verification — don't manually edit it. Use `go list -m all` to see your full dependency tree.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+    </ul>
+  </div>
+  <script>
+    (() => {
+      const SIZES = [14, 15, 16, 17, 18, 20];
+      const KEY = location.pathname.replace(/[^a-z0-9]/gi, "_");
+
+      const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
+      let sizeIdx = SIZES.indexOf(savedSize);
+      if (sizeIdx < 0) sizeIdx = 4;
+
+      let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
+
+      const apply = () => {
+        document.documentElement.style.fontSize = `${SIZES[sizeIdx]}px`;
+        document.getElementById("font-label").textContent = SIZES[sizeIdx];
+        localStorage.setItem(`${KEY}_fs`, SIZES[sizeIdx]);
+      };
+
+      const applyTheme = () => {
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.getElementById("theme-icon").innerHTML = dark ? "&#9788;" : "&#9790;";
+        localStorage.setItem(`${KEY}_theme`, dark ? "dark" : "light");
+      };
+
+      document.getElementById("font-down").onclick = () => {
+        if (sizeIdx > 0) { sizeIdx--; apply(); }
+      };
+      document.getElementById("font-up").onclick = () => {
+        if (sizeIdx < SIZES.length - 1) { sizeIdx++; apply(); }
+      };
+      document.getElementById("theme-toggle").onclick = () => {
+        dark = !dark; applyTheme();
+      };
+
+      apply();
+      applyTheme();
+    })();
+  </script>
+</body>
+</html>
