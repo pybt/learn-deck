@@ -9,6 +9,7 @@ import { golangIntroduction } from "./data/golang/introduction";
 import { golangQuickStart } from "./data/golang/quick-start";
 import { helm } from "./data/helm/core";
 import { helmCreate } from "./data/helm/create";
+import { qaIntroduction } from "./data/qa/introduction";
 import { generateDeckHtml, generateIndexHtml } from "./template";
 
 const DECKS_DIR = join(import.meta.dir, "..", "decks");
@@ -61,6 +62,12 @@ const decks = [
     id: "quick-start",
     title: "Go Quick Start",
     cards: golangQuickStart,
+  },
+  {
+    dir: "qa",
+    id: "introduction",
+    title: "Introduction to Software QA",
+    cards: qaIntroduction,
   },
 ];
 

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Introduction to Software QA — AI Learn</title>
+  <style>
+    :root {
+      --bg: #f8f6f2;
+      --bg-card: #ffffff;
+      --border: #ddd7ce;
+      --border-header: #d4cfc7;
+      --text: #2d2a26;
+      --text-title: #1a1815;
+      --text-muted: #7a746a;
+      --text-summary: #5c564c;
+      --text-body: #3d3832;
+      --accent: #3b6b4f;
+      --accent-shadow: rgba(59, 107, 79, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.04);
+      --toolbar-bg: #ffffff;
+      --toolbar-border: #ddd7ce;
+      --btn-bg: #edeae5;
+      --btn-hover: #ddd7ce;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --border: #334155;
+      --border-header: #334155;
+      --text: #e2e8f0;
+      --text-title: #f1f5f9;
+      --text-muted: #64748b;
+      --text-summary: #94a3b8;
+      --text-body: #cbd5e1;
+      --accent: #6ee7a0;
+      --accent-shadow: rgba(110, 231, 160, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.2);
+      --toolbar-bg: #1e293b;
+      --toolbar-border: #334155;
+      --btn-bg: #334155;
+      --btn-hover: #475569;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Charter", "Georgia", "Cambria", "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      font-size: 1rem;
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--toolbar-border);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .toolbar button {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toolbar button:hover {
+      background: var(--btn-hover);
+    }
+
+    .toolbar .font-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .toolbar .separator {
+      width: 1px;
+      height: 1.25rem;
+      background: var(--toolbar-border);
+      margin: 0 0.25rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 2px solid var(--border-header);
+      transition: border-color 0.3s;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.625rem;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 1px 3px var(--card-shadow);
+    }
+
+    .card:has(details[open]) {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+
+    details summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      list-style: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-number {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background 0.3s;
+    }
+
+    [data-theme="dark"] .card-number {
+      color: #0f172a;
+    }
+
+    .card-header {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-title);
+      display: block;
+    }
+
+    .summary {
+      margin-top: 0.3rem;
+      font-size: 0.875rem;
+      color: var(--text-summary);
+      line-height: 1.5;
+    }
+
+    .chevron {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    .chevron::before,
+    .chevron::after {
+      content: "";
+      position: absolute;
+      background: var(--accent);
+      border-radius: 1px;
+      top: 50%;
+      left: 50%;
+      transition: background 0.3s;
+    }
+
+    .chevron::before {
+      width: 14px;
+      height: 2px;
+      transform: translate(-50%, -50%);
+    }
+
+    .chevron::after {
+      width: 2px;
+      height: 14px;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    details[open] .chevron::after {
+      transform: translate(-50%, -50%) scaleY(0);
+    }
+
+    .details {
+      padding: 0 1.25rem 1.25rem;
+      padding-left: calc(1.25rem + 2rem + 0.75rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .section h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .section p {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      line-height: 1.65;
+    }
+
+    .section pre {
+      background: var(--btn-bg);
+      border-radius: 0.375rem;
+      padding: 0.75rem 1rem;
+      overflow-x: auto;
+      margin: 0.3rem 0 0;
+      transition: background 0.3s;
+    }
+
+    .section pre code {
+      font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-body);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.25rem 0.75rem 2rem;
+      }
+
+      .title {
+        font-size: 1rem;
+      }
+
+      .details {
+        padding-left: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="toolbar">
+    <button type="button" id="font-down" aria-label="Decrease font size">A-</button>
+    <span class="font-label" id="font-label">18</span>
+    <button type="button" id="font-up" aria-label="Increase font size">A+</button>
+    <span class="separator"></span>
+    <button type="button" id="theme-toggle" aria-label="Toggle theme">
+      <span id="theme-icon">&#9790;</span>
+    </button>
+  </nav>
+  <div class="container">
+    <header>
+      <h1>Introduction to Software QA</h1>
+      <p>10 cards</p>
+    </header>
+    <ul class="card-list">
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">1</span>
+          <div class="card-header">
+            <span class="title">What Is Software QA?</span>
+            <p class="summary">Quality Assurance is a proactive, process-oriented discipline that ensures software meets defined standards throughout the entire SDLC — not just at the end.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>How it works</h3>
+          <p>QA embeds quality practices into every SDLC phase: requirements review, design inspection, code review, testing, and post-release monitoring. Rather than catching defects after the fact, QA establishes processes, standards, and checkpoints that prevent defects from being introduced. Think of QA as the system of guardrails, not the crash test.</p>
+        </div>
+        <div class="section">
+          <h3>Role in the SDLC</h3>
+          <p>During requirements: QA reviews specs for testability and completeness. During design: QA validates architecture against quality attributes. During development: QA enforces coding standards, static analysis, and peer review. During testing: QA designs and executes test strategies. Post-release: QA monitors production metrics, user feedback, and defect trends to drive continuous improvement.</p>
+        </div>
+        <div class="section">
+          <h3>Why it matters</h3>
+          <p>Defects found in production cost 10-100x more to fix than those caught during requirements or design. Organizations with mature QA processes report up to 45% faster defect resolution. QA is increasingly a team-wide responsibility — every engineer contributes to quality, with QA specialists focusing on strategy, tooling, and process improvement.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">2</span>
+          <div class="card-header">
+            <span class="title">QA vs QC vs Testing</span>
+            <p class="summary">QA prevents defects through process improvement, QC detects defects in finished work products, and Testing is the execution of tests — three distinct but complementary activities.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Quality Assurance (QA)</h3>
+          <p>QA is process-oriented and proactive. It focuses on establishing and improving the processes used to create software: coding standards, review checklists, CI/CD pipeline design, and workflow optimization. The analogy: QA is the hygiene rules in a kitchen — preventing contamination before it happens. QA asks: 'Are we building the product the right way?'</p>
+        </div>
+        <div class="section">
+          <h3>Quality Control (QC)</h3>
+          <p>QC is product-oriented and reactive. It inspects the work products (code, builds, releases) to verify they meet specifications. QC activities include code reviews, test execution, and build validation. The analogy: QC is the food inspector tasting the final dish. QC asks: 'Does this product meet the requirements?'</p>
+        </div>
+        <div class="section">
+          <h3>Testing</h3>
+          <p>Testing is a subset of QC — the specific activity of executing software with the intent of finding defects. It includes writing test cases, running automated suites, exploratory testing, and performance benchmarking. Testing provides evidence about quality but does not by itself improve processes (that is QA's job).</p>
+        </div>
+        <div class="section">
+          <h3>Practical example</h3>
+          <p>QA: Establishing a rule that all PRs require automated tests and a peer review before merge. QC: Reviewing a specific PR to confirm it has tests, passes lint, and meets acceptance criteria. Testing: Running the test suite against the PR build to detect regressions. All three work together — QA sets the standard, QC verifies compliance, and Testing provides the data.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">3</span>
+          <div class="card-header">
+            <span class="title">Types of Testing</span>
+            <p class="summary">The test pyramid organizes testing into layers — unit, integration, system, and acceptance — with additional types like regression and smoke testing serving specific purposes.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Unit testing (base of the pyramid)</h3>
+          <p>Tests individual functions, methods, or classes in isolation. Fast (milliseconds), cheap to maintain, and should form 70-80% of your test suite. Dependencies are mocked or stubbed. Example: testing that a calculateTax() function returns the correct value for given inputs. Frameworks: Jest, Vitest, pytest, JUnit, Go's testing package.</p>
+        </div>
+        <div class="section">
+          <h3>Integration testing (middle layer)</h3>
+          <p>Tests how components work together — API endpoints with databases, services with message queues, or modules with external APIs. Slower than unit tests because they involve real dependencies (or realistic fakes like testcontainers). Should comprise 15-20% of your suite. Example: verifying that a REST endpoint correctly writes to and reads from a PostgreSQL database.</p>
+        </div>
+        <div class="section">
+          <h3>System and acceptance testing (top layer)</h3>
+          <p>System testing validates the complete application against requirements in a production-like environment. Acceptance testing (UAT) confirms the system meets business needs from the user's perspective. These are the most expensive to run and maintain — keep them to 5-10% of your suite. Tools: Cypress, Playwright, Selenium for browser-based E2E tests.</p>
+        </div>
+        <div class="section">
+          <h3>Specialized testing types</h3>
+          <p>Regression testing: Re-running tests after changes to ensure nothing broke — typically automated in CI. Smoke testing: A quick, broad check that critical paths work after a deployment. Sanity testing: A narrow, focused check on a specific fix or feature. Exploratory testing: Unscripted, human-driven testing guided by experience and intuition — finds edge cases automation misses.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">4</span>
+          <div class="card-header">
+            <span class="title">Test Automation Fundamentals</span>
+            <p class="summary">Test automation replaces repetitive manual test execution with scripts that run consistently, enabling fast feedback loops and reliable regression detection at scale.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>What to automate</h3>
+          <p>Automate tests that are: run frequently (regression suites), deterministic (same input = same output), time-consuming manually (data-driven scenarios), or critical path (login, checkout, core workflows). Keep manual: exploratory testing, usability evaluation, edge cases still being understood, and tests that change too frequently to maintain automation ROI.</p>
+        </div>
+        <div class="section">
+          <h3>The test pyramid in practice</h3>
+          <p>Follow the pyramid: many fast unit tests, fewer integration tests, minimal E2E tests. Anti-pattern: the 'ice cream cone' where most tests are slow E2E/UI tests and few are unit tests. A healthy ratio might be 70% unit, 20% integration, 10% E2E. This gives fast feedback (unit tests in seconds) while still validating real user workflows (E2E tests in minutes).</p>
+        </div>
+        <div class="section">
+          <h3>Key frameworks and tools</h3>
+          <p>Unit: Jest/Vitest (JS/TS), pytest (Python), JUnit (Java), Go testing. Integration: Testcontainers (real databases in Docker), Supertest (HTTP). E2E: Playwright (recommended for new projects — fast, reliable, multi-browser), Cypress. API: Postman/Newman, REST Assured. Mobile: Appium, Detox. All should integrate into CI pipelines for automated execution on every commit.</p>
+        </div>
+        <div class="section">
+          <h3>Best practices</h3>
+          <p>Tests should be independent (no shared state), deterministic (no flaky tests), and fast. Use descriptive test names that explain the expected behavior. Follow the Arrange-Act-Assert pattern. Maintain test data factories instead of hardcoded fixtures. Track flaky tests and fix or quarantine them immediately — flaky tests erode team trust in the test suite.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">5</span>
+          <div class="card-header">
+            <span class="title">QA Methodologies: Shift-Left, TDD, BDD</span>
+            <p class="summary">Modern QA shifts testing earlier in the SDLC with methodologies like shift-left testing, Test-Driven Development, and Behavior-Driven Development to catch defects when they are cheapest to fix.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Shift-left testing</h3>
+          <p>Move testing activities earlier in the SDLC — from 'test after code' to 'test during and before code.' Practices include: reviewing requirements for testability, writing tests before or alongside code, running static analysis and security scans in CI, and involving QA in design discussions. By 2026, shift-left has converged with shift-right (production monitoring) for full-lifecycle quality.</p>
+        </div>
+        <div class="section">
+          <h3>Test-Driven Development (TDD)</h3>
+          <p>The Red-Green-Refactor cycle: (1) Write a failing test that defines the desired behavior. (2) Write the minimum code to make it pass. (3) Refactor while keeping tests green. TDD produces code with high test coverage by design, makes refactoring safe, and serves as living documentation. It works best for business logic and algorithmic code. Aim for 70-80% coverage of core business logic.</p>
+        </div>
+        <div class="section">
+          <h3>Behavior-Driven Development (BDD)</h3>
+          <p>BDD bridges the gap between technical and non-technical stakeholders using a shared language. Tests are written in Given-When-Then format (Gherkin syntax):</p><pre><code>Given a user has items in their cart
+When they proceed to checkout
+Then they see an order summary</code></pre><p>Tools: Cucumber, SpecFlow, behave (Python). BDD scenarios become executable acceptance criteria that both product owners and engineers can read.</p>
+        </div>
+        <div class="section">
+          <h3>Choosing the right approach</h3>
+          <p>TDD excels for developer-facing code with clear inputs/outputs. BDD excels when business stakeholders need to validate behavior. Shift-left is an overarching strategy that encompasses both. In practice, most teams combine them: BDD for feature-level acceptance criteria, TDD for implementation-level unit tests, and shift-left principles for integrating security and performance testing early.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">6</span>
+          <div class="card-header">
+            <span class="title">Test Planning and Test Cases</span>
+            <p class="summary">A test plan defines the strategy, scope, resources, and schedule for testing, while test cases are the specific steps that verify individual requirements or behaviors.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Test plan essentials</h3>
+          <p>A test plan answers: What is being tested (scope)? What is not being tested (exclusions)? What types of testing will be performed? What are the entry and exit criteria? What environments, tools, and data are needed? Who is responsible for what? Risk-based testing prioritizes areas with the highest business impact and defect likelihood, focusing effort where it matters most.</p>
+        </div>
+        <div class="section">
+          <h3>Writing effective test cases</h3>
+          <p>Each test case should have: a unique ID, a clear title describing the scenario, preconditions, step-by-step actions, expected results, and actual results. Use equivalence partitioning (testing one value per input class) and boundary value analysis (testing at edges) to minimize cases while maximizing coverage. Example: for an age field accepting 18-65, test values 17, 18, 40, 65, and 66.</p>
+        </div>
+        <div class="section">
+          <h3>Modern approaches</h3>
+          <p>Agile teams often replace heavyweight test plan documents with lightweight strategies: user stories with acceptance criteria serve as test specifications, BDD scenarios become executable test cases, and test charters guide exploratory sessions. The goal is living documentation that evolves with the codebase, not shelf-ware documents that go stale.</p>
+        </div>
+        <div class="section">
+          <h3>Test management tools</h3>
+          <p>TestRail, Xray (Jira plugin), Zephyr, and qTest help teams organize, execute, and report on test cases. For lightweight needs, many teams use Jira tickets or GitHub Issues with checklists. The key is traceability — linking test cases to requirements so you can answer: 'Is this requirement tested?' and 'What does this test verify?'</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">7</span>
+          <div class="card-header">
+            <span class="title">Bug Lifecycle and Defect Management</span>
+            <p class="summary">Defects follow a structured lifecycle from discovery to closure, with clear states, ownership transitions, and severity/priority classifications that drive resolution order.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Defect lifecycle states</h3>
+          <p>New: Tester discovers and logs the defect. Assigned: Triaged and assigned to a developer. Open: Developer begins investigation. Fixed: Developer commits a fix. Retest: QA verifies the fix in the appropriate environment. Closed: Fix confirmed, defect resolved. Additional states include Deferred (fix postponed), Rejected (not a bug or won't fix), and Reopened (fix did not resolve the issue).</p>
+        </div>
+        <div class="section">
+          <h3>Writing effective bug reports</h3>
+          <p>A good bug report includes: summary (one-line description), steps to reproduce (numbered, specific), expected vs actual behavior, environment details (OS, browser, version), severity and priority, and supporting evidence (screenshots, logs, video). The most important element is reproducibility — a bug that cannot be reproduced cannot be reliably fixed.</p>
+        </div>
+        <div class="section">
+          <h3>Severity vs priority</h3>
+          <p>Severity measures technical impact: Critical (system crash, data loss), Major (feature broken, no workaround), Minor (feature broken, workaround exists), Trivial (cosmetic issue). Priority measures business urgency: how soon it must be fixed. A typo on the homepage is low severity but may be high priority. A crash in a rarely used admin screen is high severity but may be lower priority.</p>
+        </div>
+        <div class="section">
+          <h3>Modern defect management</h3>
+          <p>Teams with formal defect processes resolve bugs up to 45% faster. Modern tools include Jira, Linear, GitHub Issues, and Shortcut. Best practices: triage defects regularly (daily or per-sprint), set SLAs by severity (e.g., Critical: 4h response, Major: 24h), track defect escape rate (bugs reaching production), and conduct root cause analysis on recurring defect patterns to improve upstream processes.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">8</span>
+          <div class="card-header">
+            <span class="title">CI/CD and QA Integration</span>
+            <p class="summary">Integrating QA into CI/CD pipelines provides automated quality gates at every stage — from commit to production — enabling fast, confident releases.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>CI pipeline quality gates</h3>
+          <p>On every commit or PR, the CI pipeline should run: static analysis and linting (seconds), unit tests (seconds to minutes), integration tests (minutes), security scans — SAST for code vulnerabilities, SCA for dependency vulnerabilities. All gates must pass before a merge is allowed. This catches the majority of defects within minutes of introduction.</p>
+        </div>
+        <div class="section">
+          <h3>CD pipeline quality gates</h3>
+          <p>Before deployment: run E2E tests against a staging environment, check test coverage thresholds (fail the build if coverage drops), validate infrastructure as code. After deployment: run smoke tests against the live environment, monitor error rates and performance metrics, use canary or blue-green deployments to limit blast radius. Automated rollback triggers if error rates spike.</p>
+        </div>
+        <div class="section">
+          <h3>Pipeline best practices</h3>
+          <p>Keep the feedback loop fast — tests should complete in under 10 minutes to preserve developer flow. Parallelize test execution across multiple runners. Use the test pyramid to keep fast tests dominant. Cache dependencies to reduce build times. Run slow tests (E2E, performance) on a scheduled basis or only on the main branch, not on every PR.</p>
+        </div>
+        <div class="section">
+          <h3>Tools and integration</h3>
+          <p>CI/CD: GitHub Actions, GitLab CI, Jenkins, CircleCI. Test reporting: Allure, ReportPortal for dashboards and trend analysis. Quality gates: SonarQube for code quality and coverage thresholds. Container testing: Testcontainers for spinning up real databases in CI. The pipeline itself becomes the primary QA enforcement mechanism — no manual gating required for standard releases.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">9</span>
+          <div class="card-header">
+            <span class="title">Non-Functional Testing</span>
+            <p class="summary">Non-functional testing evaluates how well software performs under various conditions — covering performance, security, usability, reliability, and accessibility beyond feature correctness.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Performance testing</h3>
+          <p>Load testing: Simulates expected concurrent users to measure response times and throughput. Stress testing: Pushes beyond normal load to find breaking points. Spike testing: Tests sudden traffic surges. Soak/endurance testing: Runs sustained load over hours to detect memory leaks. Key metrics: response time (p50, p95, p99), throughput (requests/second), error rate, and resource utilization. Tools: k6, JMeter, Gatling, Locust.</p>
+        </div>
+        <div class="section">
+          <h3>Security testing</h3>
+          <p>SAST (Static Application Security Testing): Scans source code for vulnerabilities before deployment — catches SQL injection, XSS, hardcoded secrets. DAST (Dynamic Application Security Testing): Tests running applications for exploitable vulnerabilities. SCA (Software Composition Analysis): Scans dependencies for known CVEs. Penetration testing: Simulated attacks by security professionals. Integrate SAST and SCA into CI; run DAST against staging environments.</p>
+        </div>
+        <div class="section">
+          <h3>Usability and accessibility</h3>
+          <p>Usability testing: Observing real users completing tasks to identify friction points. Measures task completion rate, time on task, and error rate. Accessibility testing: Ensuring compliance with WCAG 2.2 guidelines — screen reader compatibility, keyboard navigation, color contrast, alt text. Tools: axe-core (automated accessibility scanning), Lighthouse (Chrome DevTools). Automated checks catch about 30-40% of accessibility issues; manual testing is essential for the rest.</p>
+        </div>
+        <div class="section">
+          <h3>Reliability and compatibility</h3>
+          <p>Reliability testing: Chaos engineering (intentionally injecting failures) validates that the system degrades gracefully. Tools: Chaos Monkey, Litmus, Gremlin. Compatibility testing: Verifying behavior across browsers (BrowserStack, Playwright multi-browser), devices (mobile, tablet, desktop), and operating systems. Cross-browser testing is especially critical for web applications where rendering differences can break layouts.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+
+    <li class="card">
+      <details>
+        <summary>
+          <span class="card-number">10</span>
+          <div class="card-header">
+            <span class="title">QA Metrics and Reporting</span>
+            <p class="summary">QA metrics quantify software quality and testing effectiveness, enabling data-driven decisions about release readiness, process improvements, and resource allocation.</p>
+          </div>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="details">
+        <div class="section">
+          <h3>Core testing metrics</h3>
+          <p>Test pass rate: Percentage of tests passing (target: &gt;95% for release). Test coverage: Percentage of code exercised by tests (target: 70-80% for core logic). Defect density: Defects per KLOC (thousand lines of code) — lower is better. Defect detection rate: Percentage of defects found before production. Automation coverage: Percentage of test cases that are automated (mature teams target 60-80%).</p>
+        </div>
+        <div class="section">
+          <h3>Process metrics</h3>
+          <p>Defect escape rate: Bugs found in production vs total bugs — the key QA effectiveness metric. Mean Time to Detect (MTTD): How quickly defects are discovered. Mean Time to Resolve (MTTR): How quickly defects are fixed. Defect removal efficiency (DRE): Defects found pre-release divided by total defects (pre + post release). A DRE above 95% indicates a mature QA process.</p>
+        </div>
+        <div class="section">
+          <h3>Business-aligned metrics</h3>
+          <p>81% of executives now link software quality directly to customer satisfaction and revenue. Key business metrics: deployment frequency (how often you release), change failure rate (percentage of deployments causing incidents), customer-reported defects per release, and uptime/availability (99.9% = 8.7h downtime/year). The DORA metrics (deployment frequency, lead time, change failure rate, MTTR) bridge engineering quality and business outcomes.</p>
+        </div>
+        <div class="section">
+          <h3>Reporting and dashboards</h3>
+          <p>Use real-time dashboards rather than periodic reports — tools like Allure, ReportPortal, TestRail, or Grafana provide trend visualization. Key views: test execution trends over time, defect aging (how long bugs stay open), flaky test tracking, and release readiness scorecards. Report quality trends, not just snapshots — a declining defect escape rate matters more than a single sprint's pass rate.</p>
+        </div>
+        </div>
+      </details>
+    </li>
+    </ul>
+  </div>
+  <script>
+    (() => {
+      const SIZES = [14, 15, 16, 17, 18, 20];
+      const KEY = location.pathname.replace(/[^a-z0-9]/gi, "_");
+
+      const savedSize = parseInt(localStorage.getItem(`${KEY}_fs`), 10);
+      let sizeIdx = SIZES.indexOf(savedSize);
+      if (sizeIdx < 0) sizeIdx = 4;
+
+      let dark = localStorage.getItem(`${KEY}_theme`) === "dark";
+
+      const apply = () => {
+        document.documentElement.style.fontSize = `${SIZES[sizeIdx]}px`;
+        document.getElementById("font-label").textContent = SIZES[sizeIdx];
+        localStorage.setItem(`${KEY}_fs`, SIZES[sizeIdx]);
+      };
+
+      const applyTheme = () => {
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        document.getElementById("theme-icon").innerHTML = dark ? "&#9788;" : "&#9790;";
+        localStorage.setItem(`${KEY}_theme`, dark ? "dark" : "light");
+      };
+
+      document.getElementById("font-down").onclick = () => {
+        if (sizeIdx > 0) { sizeIdx--; apply(); }
+      };
+      document.getElementById("font-up").onclick = () => {
+        if (sizeIdx < SIZES.length - 1) { sizeIdx++; apply(); }
+      };
+      document.getElementById("theme-toggle").onclick = () => {
+        dark = !dark; applyTheme();
+      };
+
+      apply();
+      applyTheme();
+    })();
+  </script>
+</body>
+</html>
