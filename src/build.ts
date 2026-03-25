@@ -2,8 +2,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { aiAgentSkills } from "./data/ai/agent-skills";
 import { buildAgentSkills } from "./data/ai/build-agents";
+import { claudeCodeTeammates } from "./data/ai/claude-code-teammates";
 import { dockerFundamentals } from "./data/docker/fundamentals";
 import { dockerLogging } from "./data/docker/logging";
+import { goroutineFundamentals } from "./data/golang/goroutine-fundamentals";
 import { golangIntroduction } from "./data/golang/introduction";
 import { golangQuickStart } from "./data/golang/quick-start";
 import { helm } from "./data/helm/core";
@@ -25,6 +27,12 @@ const decks = [
     id: "build-agents",
     title: "Build Agent Skills",
     cards: buildAgentSkills,
+  },
+  {
+    dir: "ai",
+    id: "claude-code-teammates",
+    title: "Claude Code Teammates",
+    cards: claudeCodeTeammates,
   },
   {
     dir: "docker",
@@ -49,6 +57,12 @@ const decks = [
     id: "create",
     title: "Creating Helm Charts",
     cards: helmCreate,
+  },
+  {
+    dir: "golang",
+    id: "goroutine-fundamentals",
+    title: "Go Goroutine Fundamentals",
+    cards: goroutineFundamentals,
   },
   {
     dir: "golang",
