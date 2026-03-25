@@ -7,14 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": [
-      "**",
-      "!**/tsconfig.json",
-      "!**/routeTree.gen.ts",
-      "!**/*.css",
-      "!**/.claude",
-      "!**/decks"
-    ]
+    "includes": ["**", "!**/.claude", "!**/decks"]
   },
   "formatter": {
     "enabled": true,
@@ -39,16 +32,5 @@
       }
     }
   },
-  "overrides": [
-    {
-      "includes": ["**/*.test.ts", "**/__mocks__/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noNonNullAssertion": "off"
-          }
-        }
-      }
-    }
-  ]
+  "overrides": []
 }

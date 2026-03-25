@@ -21,7 +21,6 @@ A learning tool for AI in software development. Generates self-contained HTML le
 - **Template**: `src/template.ts` — generates self-contained HTML with inline CSS and vanilla JS
 - **Build script**: `src/build.ts` — reads deck data and writes HTML files to `decks/`
 - **Output**: `decks/<deck-name>.html` — single-file, no dependencies, uses `<details>/<summary>` for expand/collapse
-- **iCloud sync**: Build script copies decks to `~/Library/Mobile Documents/com~apple~CloudDocs/Learn`
 - **Deployment**: GitHub Actions (`.github/workflows/deploy.yml`) — builds and deploys to GitHub Pages on push to `master`
 
 ## Adding a New Deck

@@ -171,6 +171,7 @@ export function generateIndexHtml(decks: DeckEntry[]): string {
     }
 
     .toolbar button:hover { background: var(--btn-hover); }
+    .toolbar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .container {
       width: 100%;
@@ -237,6 +238,18 @@ export function generateIndexHtml(decks: DeckEntry[]): string {
     .deck-list a:hover {
       border-color: var(--accent);
       box-shadow: 0 2px 8px var(--accent-shadow);
+    }
+
+    .deck-list a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
     .deck-title {
@@ -382,6 +395,11 @@ export function generateDeckHtml(title: string, cards: CardData[]): string {
       background: var(--btn-hover);
     }
 
+    .toolbar button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
     .toolbar .font-label {
       font-size: 0.75rem;
       color: var(--text-muted);
@@ -454,6 +472,12 @@ export function generateDeckHtml(title: string, cards: CardData[]): string {
       cursor: pointer;
       list-style: none;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    details summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+      border-radius: 0.625rem;
     }
 
     details summary::-webkit-details-marker {
@@ -581,6 +605,13 @@ export function generateDeckHtml(title: string, cards: CardData[]): string {
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-4px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
     @media (max-width: 480px) {

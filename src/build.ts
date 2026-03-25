@@ -1,5 +1,4 @@
-import { cp, mkdir, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { aiAgentSkills } from "./data/ai/agent-skills";
 import { buildAgentSkills } from "./data/ai/build-agents";
@@ -71,24 +70,21 @@ const decks = [
   },
 ];
 
-const indexHtml = generateIndexHtml(decks);
-await writeFile(join(DECKS_DIR, "index.html"), indexHtml);
-console.log("Generated: index.html");
+try {
+  const indexHtml = generateIndexHtml(decks);
+  await writeFile(join(DECKS_DIR, "index.html"), indexHtml);
+  console.log("Generated: index.html");
 
-for (const deck of decks) {
-  const dir = join(DECKS_DIR, deck.dir);
-  await mkdir(dir, { recursive: true });
-  const html = generateDeckHtml(deck.title, deck.cards);
-  const path = join(dir, `${deck.id}.html`);
-  await writeFile(path, html);
-  console.log(`Generated: ${path}`);
+  for (const deck of decks) {
+    const dir = join(DECKS_DIR, deck.dir);
+    await mkdir(dir, { recursive: true });
+    const html = generateDeckHtml(deck.title, deck.cards);
+    const path = join(dir, `${deck.id}.html`);
+    await writeFile(path, html);
+    console.log(`Generated: ${path}`);
+  }
+  console.log(`Done — ${decks.length} deck(s) built.`);
+} catch (err) {
+  console.error("Build failed:", err);
+  process.exit(1);
 }
-
-const icloudDir = join(
-  homedir(),
-  "Library/Mobile Documents/com~apple~CloudDocs/Learn",
-);
-await cp(DECKS_DIR, icloudDir, { recursive: true });
-console.log(`Synced to iCloud: ${icloudDir}`);
-
-console.log(`Done — ${decks.length} deck(s) built.`);
